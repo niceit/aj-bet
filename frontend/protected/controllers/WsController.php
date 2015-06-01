@@ -101,8 +101,10 @@ class WsController extends Controller
 
         $this->sendResponse("application/json", $this->_json_result);
     }
+
+
     /*
-    * User Forgot action
+    * User reset password action
     * */
     public function actionResetPassword (){
         if (Yii::app()->request->isPostRequest) {
@@ -142,16 +144,17 @@ class WsController extends Controller
                     $this->_json_result['status'] = 1;
                     $this->_json_result['message'] = array('Password has been changed');
                 }
-                else  $this->_json_result['message'] = $account->getErrors();
+                else $this->_json_result['message'] = $account->getErrors();
             }
             else $this->_json_result['message'] = array('Update failed');
         }
 
         $this->sendResponse("application/json", $this->_json_result);
     }
+
     /*
-* User Forgot action
-* */
+    * User Forgot password action
+    * */
     public function actionForgot (){
         if (Yii::app()->request->isPostRequest) {
             $email = Yii::app()->request->getPost('email');
@@ -159,20 +162,26 @@ class WsController extends Controller
                 $this->_json_result['message'] = array('Invalid email information');
                 $this->sendResponse("application/json", $this->_json_result);
             }
+
             $user = Accounts::model()->find( "email = '{$email}'");
             if($user){
+                
                 $account = Accounts::model()->findByPk($user->id);
                 $now = date('d-m-Y');
+
                 //Set activation token
                 $activation_token = sha1($email . $now);
                 $account->setAttribute('confirm_token', $activation_token);
+
                 if($account->save()){
                     // send link mail forgot password
 
                     $this->_json_result['status'] = 1;
                     $this->_json_result['message'] = array('A new password has been sent to your e-mail address');
-                }else $this->_json_result['message'] = array('Send mail failed');
-            } else  $this->_json_result['message'] = array('The E-Mail Address was not found in our records, please try again!');
+                }
+                else $this->_json_result['message'] = $account->getErrors();
+            }
+            else $this->_json_result['message'] = array('The email address was not found in our records, please try again!');
         }
 
         $this->sendResponse("application/json", $this->_json_result);
