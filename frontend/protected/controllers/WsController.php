@@ -144,7 +144,6 @@ class WsController extends Controller
                 }
             }
             else $this->_json_result['message'] = array('Update failed');
-
         }
 
         $this->sendResponse("application/json", $this->_json_result);
