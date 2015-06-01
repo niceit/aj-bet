@@ -111,44 +111,45 @@ class WsController extends Controller
             $password = Yii::app()->request->getPost('password');
             $retype_password = Yii::app()->request->getPost('retype_password');
 
-            $user = Accounts::model()->find( "email = '{$email}' AND confirm_token = '{$token}'");
-
             if(empty($email)){
-                $this->_json_result['message'] = array('Invalid forgot information');
+                $this->_json_result['message'] = array('Invalid email');
                 $this->sendResponse("application/json", $this->_json_result);
             }
             if(empty($token)){
-                $this->_json_result['message'] = array('Invalid forgot information');
+                $this->_json_result['message'] = array('Requested token is invalid');
                 $this->sendResponse("application/json", $this->_json_result);
             }
             if (empty($password)){
-                $this->_json_result['message'] = array('Invalid forgot information');
+                $this->_json_result['message'] = array('Please fill your password');
                 $this->sendResponse("application/json", $this->_json_result);
             }
             if (empty($retype_password)){
-                $this->_json_result['message'] = array('Invalid forgot information');
+                $this->_json_result['message'] = array('Please confirm your password');
                 $this->sendResponse("application/json", $this->_json_result);
             }
             if ($retype_password != $password) {
-                $this->_json_result['message'] = array('Invalid forgot information4');
+                $this->_json_result['message'] = array('Password confirmation did not match');
                 $this->sendResponse("application/json", $this->_json_result);
             }
 
-            if($user!=null){
-                $account = Accounts::model()->findByPk($user->id);
-                $date = date_format(date_create($user->created), "d-m-Y");
-                $account->setAttribute('password',md5($password . $date));
-                if($account->save()){
+            //Fetch account
+            $account = Accounts::model()->find ("email = '{$email}' AND confirm_token = '{$token}'");
+            if(!empty($account)){
+                $date = date_format(date_create($account->created), "d-m-Y");
+                $account->setAttribute('password', md5($password . $date));
+
+                if ($account->save()){
                     $this->_json_result['status'] = 1;
-                    $this->_json_result['message'] = array('Your profile has been updated');
+                    $this->_json_result['message'] = array('Password has been changed');
                 }
+                else  $this->_json_result['message'] = $account->getErrors();
             }
             else $this->_json_result['message'] = array('Update failed');
-
         }
 
         $this->sendResponse("application/json", $this->_json_result);
     }
+    
     /*
      * Send back request to client
      * */
