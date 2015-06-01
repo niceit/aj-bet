@@ -101,7 +101,54 @@ class WsController extends Controller
 
         $this->sendResponse("application/json", $this->_json_result);
     }
+    /*
+    * User Forgot action
+    * */
+    public function actionForgot (){
+        if (Yii::app()->request->isPostRequest) {
+            $email = Yii::app()->request->getPost('email');
+            $token = Yii::app()->request->getPost('token');
+            $password = Yii::app()->request->getPost('password');
+            $retype_password = Yii::app()->request->getPost('retype_password');
 
+            $user = Accounts::model()->find( "email = '{$email}' AND confirm_token = '{$token}'");
+
+            if(empty($email)){
+                $this->_json_result['message'] = array('Invalid forgot information');
+                $this->sendResponse("application/json", $this->_json_result);
+            }
+            if(empty($token)){
+                $this->_json_result['message'] = array('Invalid forgot information');
+                $this->sendResponse("application/json", $this->_json_result);
+            }
+            if (empty($password)){
+                $this->_json_result['message'] = array('Invalid forgot information');
+                $this->sendResponse("application/json", $this->_json_result);
+            }
+            if (empty($retype_password)){
+                $this->_json_result['message'] = array('Invalid forgot information');
+                $this->sendResponse("application/json", $this->_json_result);
+            }
+            if ($retype_password != $password) {
+                $this->_json_result['message'] = array('Invalid forgot information4');
+                $this->sendResponse("application/json", $this->_json_result);
+            }
+
+            if($user!=null){
+                $account = Accounts::model()->findByPk($user->id);
+                $date = date_format(date_create($user->created), "d-m-Y");
+                $account->setAttribute('password',md5($password . $date));
+                if($account->save()){
+                    $this->_json_result['status'] = 1;
+                    $this->_json_result['message'] = array('Your profile has been updated');
+                }
+            }
+            else $this->_json_result['message'] = array('Update failed');
+
+        }
+
+        $this->sendResponse("application/json", $this->_json_result);
+    }
     /*
      * Send back request to client
      * */
