@@ -32,7 +32,7 @@ class WsController extends Controller
                     $now = date('d-m-Y');
 
                     //Encrypt password
-                    $password_encrypt = md5($data['username'] . $now);
+                    $password_encrypt = md5($data['password'] . $now);
                     $Account->setAttribute('password', $password_encrypt);
 
                     //Set activation token
@@ -62,6 +62,49 @@ class WsController extends Controller
     }
 
     /*
+   * User login action
+   * */
+    public function actionLogin(){
+        if (Yii::app()->request->isPostRequest) {
+            $username = Yii::app()->request->getPost('username');
+            $password = Yii::app()->request->getPost('password');
+            $remember_me = Yii::app()->request->getPost('remember_me');
+            $is_login = true;
+            // check username and password
+            if (empty($username)){
+                $is_login = false;
+                $this->_json_result['message'] = array('Invalid login information');
+            }
+            if ($is_login && empty($password)){
+                $is_login = false;
+                $this->_json_result['message'] = array('Invalid login information');
+            }
+
+            // check login
+            if ($is_login) {
+                $result = $this->checkLogin($username, $password, $remember_me);
+                if ($result!=false) {
+                    if($result->getActive()==1)
+                    {
+                        $account = array(
+                            'id'            => $result->getId(),
+                            'first_name'    => $result->getFirstname(),
+                            'last_name'     => $result->getLastname()
+
+                        );
+                        $this->_json_result['message'] = array('account'=>$account,'message'=>'Logged in successfully');
+                    }
+                    else
+                        $this->_json_result['message'] = array('Please active your account before using');
+
+                } else
+                    $this->_json_result['message'] = array('Invalid login information');
+            }
+        }
+        $this->sendResponse("application/json", $this->_json_result);
+    }
+
+    /*
      * Send back request to client
      * */
     private function sendResponse($type, $data, $json_data = true){
@@ -71,4 +114,21 @@ class WsController extends Controller
         }
         else Yii::app()->end ($data);
     }
+
+    /*
+     * Function check login from model
+     * */
+
+    private function checkLogin($username, $password, $remember_me = null) {
+
+        $identity = new UserIdentity($username, $password);
+        $identity->authenticate();
+        if ($identity->errorCode === UserIdentity::ERROR_NONE) {
+            $duration = !empty($remember_me) ? (3600 * 24 * 30) : (3600 * 24 * 1); // 30 days
+            Yii::app()->user->login($identity, $duration);
+            return $identity;
+        } else
+            return false;
+    }
+
 }

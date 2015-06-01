@@ -7,6 +7,11 @@
  */
 class UserIdentity extends CUserIdentity
 {
+    private $_id;
+    private $_active;
+    private $_first_name;
+    private $_last_name;
+
 	/**
 	 * Authenticates a user.
 	 * The example implementation makes sure if the username and password
@@ -15,19 +20,39 @@ class UserIdentity extends CUserIdentity
 	 * against some persistent user identity storage (e.g. database).
 	 * @return boolean whether authentication succeeds.
 	 */
-	public function authenticate()
-	{
-		$users=array(
-			// username => password
-			'demo'=>'demo',
-			'admin'=>'admin',
-		);
-		if(!isset($users[$this->username]))
-			$this->errorCode=self::ERROR_USERNAME_INVALID;
-		elseif($users[$this->username]!==$this->password)
-			$this->errorCode=self::ERROR_PASSWORD_INVALID;
-		else
-			$this->errorCode=self::ERROR_NONE;
-		return !$this->errorCode;
-	}
+
+    public function authenticate() {
+        $username = strtolower ( $this->username );
+        $user = Accounts::model()->find( "username = '{$username}'");
+        $date = date_format(date_create($user->created),"d-m-Y");
+        if ($user === null) {
+            $this->errorCode = self::ERROR_USERNAME_INVALID;
+        } else if ($user->password != md5($this->password.$date)) {
+            $this->errorCode = self::ERROR_PASSWORD_INVALID;
+        }
+        else {
+            $this->_id = $user->id;
+            $this->_active = $user->active;
+            $this->_first_name = $user->first_name;
+            $this->_last_name = $user->last_name;
+
+            $this->errorCode = self::ERROR_NONE;
+
+        }
+        return $this->errorCode == self::ERROR_NONE;
+
+    }
+    public function getId() {
+        return $this->_id;
+    }
+    public function getActive() {
+        return $this->_active;
+    }
+    public function getFirstname() {
+        return $this->_first_name;
+    }
+    public function getLastname() {
+        return $this->_last_name;
+    }
+
 }
