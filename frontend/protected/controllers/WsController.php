@@ -149,7 +149,7 @@ class WsController extends Controller
 
         $this->sendResponse("application/json", $this->_json_result);
     }
-    
+
     /*
      * Send back request to client
      * */
