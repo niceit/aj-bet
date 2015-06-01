@@ -68,39 +68,37 @@ class WsController extends Controller
         if (Yii::app()->request->isPostRequest) {
             $username = Yii::app()->request->getPost('username');
             $password = Yii::app()->request->getPost('password');
-            $remember_me = Yii::app()->request->getPost('remember_me');
-            $is_login = true;
-            // check username and password
+
+            //Check username and password
             if (empty($username)){
-                $is_login = false;
                 $this->_json_result['message'] = array('Invalid login information');
+                $this->sendResponse("application/json", $this->_json_result);
             }
-            if ($is_login && empty($password)){
-                $is_login = false;
+
+            if (empty($password)){
                 $this->_json_result['message'] = array('Invalid login information');
+                $this->sendResponse("application/json", $this->_json_result);
             }
 
-            // check login
-            if ($is_login) {
-                $result = $this->checkLogin($username, $password, $remember_me);
-                if ($result!=false) {
-                    if($result->getActive()==1)
-                    {
-                        $account = array(
-                            'id'            => $result->getId(),
-                            'first_name'    => $result->getFirstname(),
-                            'last_name'     => $result->getLastname()
+            //Check login
+            $result = $this->checkLogin($username, $password);
+            if (!empty($result)) {
+                if($result->getActive() == 1) {
+                    $account = array(
+                        'id'            => $result->getId(),
+                        'first_name'    => $result->getFirstname(),
+                        'last_name'     => $result->getLastname()
 
-                        );
-                        $this->_json_result['message'] = array('account'=>$account,'message'=>'Logged in successfully');
-                    }
-                    else
-                        $this->_json_result['message'] = array('Please active your account before using');
-
-                } else
-                    $this->_json_result['message'] = array('Invalid login information');
+                    );
+                    $this->_json_result['status'] = 1;
+                    $this->_json_result['message'] = array('Logged in successfully');
+                    $this->_json_result['account'] = array($account);
+                }
+                else $this->_json_result['message'] = array('Please active your account before using');
             }
+            else $this->_json_result['message'] = array('Invalid login information');
         }
+
         $this->sendResponse("application/json", $this->_json_result);
     }
 
@@ -118,17 +116,13 @@ class WsController extends Controller
     /*
      * Function check login from model
      * */
-
     private function checkLogin($username, $password, $remember_me = null) {
 
         $identity = new UserIdentity($username, $password);
         $identity->authenticate();
         if ($identity->errorCode === UserIdentity::ERROR_NONE) {
-            $duration = !empty($remember_me) ? (3600 * 24 * 30) : (3600 * 24 * 1); // 30 days
-            Yii::app()->user->login($identity, $duration);
             return $identity;
-        } else
-            return false;
+        } else return null;
     }
 
 }

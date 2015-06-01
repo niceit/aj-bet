@@ -22,22 +22,24 @@ class UserIdentity extends CUserIdentity
 	 */
 
     public function authenticate() {
-        $username = strtolower ( $this->username );
+        $username = $this->username;
         $user = Accounts::model()->find( "username = '{$username}'");
-        $date = date_format(date_create($user->created),"d-m-Y");
+
         if ($user === null) {
             $this->errorCode = self::ERROR_USERNAME_INVALID;
-        } else if ($user->password != md5($this->password.$date)) {
-            $this->errorCode = self::ERROR_PASSWORD_INVALID;
-        }
-        else {
-            $this->_id = $user->id;
-            $this->_active = $user->active;
-            $this->_first_name = $user->first_name;
-            $this->_last_name = $user->last_name;
+        } else {
+            $date = date_format(date_create($user->created), "d-m-Y");
+            if ($user->password != md5($this->password . $date)) {
+                $this->errorCode = self::ERROR_PASSWORD_INVALID;
+            }
+            else {
+                $this->_id = $user->id;
+                $this->_active = $user->active;
+                $this->_first_name = $user->first_name;
+                $this->_last_name = $user->last_name;
 
-            $this->errorCode = self::ERROR_NONE;
-
+                $this->errorCode = self::ERROR_NONE;
+            }
         }
         return $this->errorCode == self::ERROR_NONE;
 
