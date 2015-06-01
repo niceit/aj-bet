@@ -11,7 +11,7 @@ class WsController extends Controller
 
 	public function actionIndex()
 	{
-		$this->render('index');
+		$this->sendResponse("application/json", $this->_json_result);
 	}
 
     /*
@@ -19,17 +19,29 @@ class WsController extends Controller
      * */
     public function actionRegister(){
         if (Yii::app()->request->isPostRequest){
-            $data = Yii::app()->request->getPost('Accounts');
+            $data = Yii::app()->request->getPost('Account');
             $Account = new Accounts();
             $Account->attributes = $data;
 
             //Validate registration data
             if ($Account->validate()){
-                if (strcmp($data['password'], $data['retype_password'])){
-                    $this->_json_result['message'] = array('Password confirmation does not match');
+                if ($data['password'] != $data['retype_password']) {
+                    $this->_json_result['message'] = array ('Password confirmation does not match');
+                }
+                else {
                     $now = date('d-m-Y');
+
+                    //Encrypt password
                     $password_encrypt = md5($data['username'] . $now);
                     $Account->setAttribute('password', $password_encrypt);
+
+                    //Set activation token
+                    $activation_token = sha1($data['username'] . $now);
+                    $Account->setAttribute('confirm_token', $activation_token);
+
+                    //Set account to active
+                    $Account->setAttribute('active', 1);
+
                     $Account->setAttribute('created', new CDbExpression('NOW()'));
                     $Account->setAttribute('modified', new CDbExpression('NOW()'));
 

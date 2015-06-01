@@ -7,6 +7,7 @@
  * @property string $id
  * @property string $username
  * @property string $password
+ * @property string $email
  * @property string $gender
  * @property string $first_name
  * @property string $last_name
@@ -39,19 +40,19 @@ class Accounts extends CActiveRecord
 		// NOTE: you should only define rules for those attributes that
 		// will receive user inputs.
 		return array(
-			array('username, password, first_name, last_name, phone, address, postcode, city, country', 'required'),
+			array('username, password, first_name, last_name, email, phone, address, postcode, city, country', 'required'),
             array('username, email', 'unique'),
 			array('active', 'numerical', 'integerOnly'=>true),
 			array('username, confirm_token, forgot_token', 'length', 'max'=>50),
 			array('password', 'length', 'max'=>128),
 			array('gender', 'length', 'max'=>6),
-			array('first_name, last_name, phone, city, country', 'length', 'max'=>45),
+			array('first_name, last_name, email, phone, city, country', 'length', 'max'=>45),
 			array('address', 'length', 'max'=>255),
 			array('postcode', 'length', 'max'=>10),
 			array('created, modified', 'safe'),
 			// The following rule is used by search().
 			// @todo Please remove those attributes that should not be searched.
-			array('id, username, password, gender, first_name, last_name, phone, address, postcode, city, country, active, confirm_token, forgot_token, created, modified', 'safe', 'on'=>'search'),
+			array('id, username, password, email, gender, first_name, last_name, phone, address, postcode, city, country, active, confirm_token, forgot_token, created, modified', 'safe', 'on'=>'search'),
 		);
 	}
 
@@ -75,6 +76,7 @@ class Accounts extends CActiveRecord
 			'id' => 'ID',
 			'username' => 'Username',
 			'password' => 'Password',
+			'email' => 'Email',
 			'gender' => 'Gender',
 			'first_name' => 'First Name',
 			'last_name' => 'Last Name',
@@ -112,6 +114,7 @@ class Accounts extends CActiveRecord
 		$criteria->compare('id',$this->id,true);
 		$criteria->compare('username',$this->username,true);
 		$criteria->compare('password',$this->password,true);
+		$criteria->compare('email',$this->email,true);
 		$criteria->compare('gender',$this->gender,true);
 		$criteria->compare('first_name',$this->first_name,true);
 		$criteria->compare('last_name',$this->last_name,true);
