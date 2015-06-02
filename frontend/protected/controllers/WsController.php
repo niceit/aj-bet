@@ -280,7 +280,7 @@ class WsController extends Controller
 
                     $this->_json_result['status'] = 1;
                     $this->_json_result['message'] = array('Categories successfully loaded');
-                    $this->_json_result['sub_categories'] = array($SubCategories);
+                    $this->_json_result['categories'] = array($SubCategories);
                 }
                 else{
                     $this->_json_result['message'] = array('There is no sub-category available');
