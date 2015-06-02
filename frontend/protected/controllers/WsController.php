@@ -46,6 +46,7 @@ class WsController extends Controller
 
                     if ($Account->save()){
                         $this->_json_result = array('status' => 1, 'message' => array('Account created successfully'));
+                        /*
                         $link_active = '?token='.$activation_token;
                         $data_email = array(
                             'Username'      =>      'testmailtest1415@gmail.com',
@@ -61,6 +62,7 @@ class WsController extends Controller
                         if($this->SendMail($data_email))
                             $this->_json_result['send_mail'] = 'Send mail successfully';
                         else $this->_json_result['send_mail'] = 'Could not send email';
+                        */
                     }
                     else {
                         $this->_json_result['message'] = $Account->getErrors();
