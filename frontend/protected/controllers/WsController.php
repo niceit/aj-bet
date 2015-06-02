@@ -188,6 +188,59 @@ class WsController extends Controller
     }
 
     /*
+  * User BetCategories action
+  * */
+    public function actionBetCategories (){
+        $Categories = array();
+        $categories = SkeezBetCategories::model()->findAll();
+        if($categories){
+            foreach($categories as $category){
+                $Categories[] = array(
+                    'id'    => $category->id,
+                    'name'  => $category->name
+                );
+            }
+        }
+
+        $this->_json_result['status'] = 1;
+        $this->_json_result['categories'] = array($Categories);
+        $this->_json_result['message'] = array('Load list successfully');
+        $this->sendResponse("application/json", $this->_json_result);
+    }
+
+    /*
+    * User BetCategories action
+    * */
+    public function actionBetSubCategories (){
+        if (Yii::app()->request->isPostRequest) {
+            $SubCategories = array();
+            $parent_category_id = Yii::app()->request->getPost('parent_category_id');
+            if(empty($parent_category_id)){
+                $this->_json_result['message'] = array('Invalid Categories information');
+                $this->sendResponse("application/json", $this->_json_result);
+            }
+            if(SkeezBetCategories::model()->find('id = '.$parent_category_id)){
+                $subcategories = SkeezBetSubCategories::model()->findAll('parent_category_id = '.$parent_category_id);
+                if($subcategories){
+                    foreach($subcategories as $subcategory){
+                        $SubCategories[] = array(
+                            'id'    => $subcategory->id,
+                            'name'  => $subcategory->name
+                        );
+                    }
+                }
+
+                $this->_json_result['status'] = 1;
+                $this->_json_result['message'] = array('Load sub list successfully');
+                $this->_json_result['subcategories'] = array($SubCategories);
+            }
+            else $this->_json_result['message'] = array('The categories was not found in our records, please try again!');
+
+        }
+        $this->sendResponse("application/json", $this->_json_result);
+    }
+
+    /*
      * Send back request to client
      * */
     private function sendResponse($type, $data, $json_data = true){
