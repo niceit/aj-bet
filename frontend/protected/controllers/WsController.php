@@ -196,16 +196,14 @@ class WsController extends Controller
                 $this->sendResponse("application/json", $this->_json_result);
             }
 
-            $user = Accounts::model()->find( "email = '{$email}'");
+            $account = Accounts::model()->find( "email = '{$email}'");
 
-            if($user){
-                
-                $account = Accounts::model()->findByPk($user->id);
+            if(!empty($account)) {
                 $now = date('d-m-Y');
 
-                //Set activation token
+                //Set forgot token
                 $activation_token = sha1($email . $now);
-                $account->setAttribute('confirm_token', $activation_token);
+                $account->setAttribute('forgot_token', $activation_token);
 
                 if($account->save()){
                     // send link mail forgot password
@@ -223,11 +221,9 @@ class WsController extends Controller
                     );
                     if($this->SendMail($data)){
                         $this->_json_result['status'] = 1;
-                        $this->_json_result['message'] = array('A new password has been sent to your e-mail address');
-                        $this->_json_result['send_mail'] = 'Send mail successfully';
-
+                        $this->_json_result['message'] = array ('Instruction has been sent to your email.');
                     }
-                    else $this->_json_result['send_mail'] = 'Could not send email';
+                    else $this->_json_result['message'] = array ('Could not send email');
                 }
                 else $this->_json_result['message'] = $account->getErrors();
             }
@@ -254,7 +250,7 @@ class WsController extends Controller
 
         $this->_json_result['status'] = 1;
         $this->_json_result['categories'] = array($Categories);
-        $this->_json_result['message'] = array('Load list successfully');
+        $this->_json_result['message'] = array('Categories successfully loaded');
         $this->sendResponse("application/json", $this->_json_result);
     }
 
@@ -269,7 +265,8 @@ class WsController extends Controller
                 $this->_json_result['message'] = array('Invalid Categories information');
                 $this->sendResponse("application/json", $this->_json_result);
             }
-            if(SkeezBetCategories::model()->find('id = '.$parent_category_id)){
+
+            if (SkeezBetCategories::model()->findByPk($parent_category_id)) {
                 $subcategories = SkeezBetSubCategories::model()->findAll('parent_category_id = '.$parent_category_id);
                 if($subcategories){
                     foreach($subcategories as $subcategory){
@@ -278,14 +275,16 @@ class WsController extends Controller
                             'name'  => $subcategory->name
                         );
                     }
+
+                    $this->_json_result['status'] = 1;
+                    $this->_json_result['message'] = array('Categories successfully loaded');
+                    $this->_json_result['sub_categories'] = array($SubCategories);
                 }
-
-                $this->_json_result['status'] = 1;
-                $this->_json_result['message'] = array('Load sub list successfully');
-                $this->_json_result['subcategories'] = array($SubCategories);
+                else{
+                    $this->_json_result['message'] = array('There is no sub-category available');
+                }
             }
-            else $this->_json_result['message'] = array('The categories was not found in our records, please try again!');
-
+            else $this->_json_result['message'] = array('Parent category was not found');
         }
         $this->sendResponse("application/json", $this->_json_result);
     }
