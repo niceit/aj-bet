@@ -16,6 +16,7 @@ return array(
 	'import'=>array(
 		'application.models.*',
 		'application.components.*',
+        'application.extensions.PHPMailer.PHPMailer'
 	),
 
 	'modules'=>array(
@@ -87,5 +88,15 @@ return array(
 		// this is used in contact page
 		'adminEmail' => 'webmaster@example.com',
         'db_prefix' => 'skeez_',
+        'php_mailer' => array(
+            'protocol' => 'smtp',
+            'host' => 'smtp.gmail.com',
+            'port' => 587,
+            'username' => 'testmailtest1415@gmail.com',
+            'password' => 'testmailtest1415/',
+            'secure_protocol' => 'tls',
+            'from_header_email' => 'phamquocvinh99@gmail.com',
+            'from_header_name' => 'SkeezBet Admin'
+        )
 	),
 );

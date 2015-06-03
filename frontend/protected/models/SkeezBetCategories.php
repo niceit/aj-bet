@@ -19,7 +19,7 @@ class SkeezBetCategories extends CActiveRecord
 	 */
 	public function tableName()
 	{
-		return 'skeez_bet_categories';
+		return Yii::app()->params['db_prefix'] . 'bet_categories';
 	}
 
 	/**

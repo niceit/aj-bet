@@ -18,6 +18,7 @@ class WsController extends Controller
      * User registration action
      * */
     public function actionRegister(){
+        $mailer = new PHPMailer();
         if (Yii::app()->request->isPostRequest){
             $data = Yii::app()->request->getPost('Account');
             $Account = new Accounts();
@@ -46,23 +47,11 @@ class WsController extends Controller
 
                     if ($Account->save()){
                         $this->_json_result = array('status' => 1, 'message' => array('Account created successfully'));
-                        /*
                         $link_active = '?token='.$activation_token;
-                        $data_email = array(
-                            'Username'      =>      'testmailtest1415@gmail.com',
-                            'Password'      =>      'testmailtest1415/',
-                            'From'          =>      'phamquocvinh99@gmail.com',
-                            'FromName'      =>      'phamquocvinh99@gmail.com',
-                            'Title'         =>      $data['email'],
-                            'addAddress'    =>      'phamquocvinh99@gmail.com',
-                            'addReplyTo'    =>      'phamquocvinh99@gmail.com',
-                            'Subject'       =>      'Test ddddd',
-                            'Body'          =>      'Body test <a href="'.$link_active.'">'.$link_active.'</a>'
-                        );
-                        if($this->SendMail($data_email))
-                            $this->_json_result['send_mail'] = 'Send mail successfully';
-                        else $this->_json_result['send_mail'] = 'Could not send email';
-                        */
+                        $SkeezBetMailer = new SkeezBetMailer();
+                        $SkeezBetMailer->addData($Account->email, 'Activation member', 'Body test <a href="'.$link_active.'">'.$link_active.'</a>');
+
+                        //$SkeezBetMailer->sendMailer();
                     }
                     else {
                         $this->_json_result['message'] = $Account->getErrors();
@@ -208,20 +197,13 @@ class WsController extends Controller
                 $account->setAttribute('forgot_token', $activation_token);
 
                 if($account->save()){
+
                     // send link mail forgot password
                     $link_active = '?token='.$activation_token;
-                    $data = array(
-                        'Username'      =>      'testmailtest1415@gmail.com',
-                        'Password'      =>      'testmailtest1415/',
-                        'From'          =>      'phamquocvinh99@gmail.com',
-                        'FromName'      =>      'phamquocvinh99@gmail.com',
-                        'Title'         =>      'Test mail',
-                        'addAddress'    =>      $email,
-                        'addReplyTo'    =>      'phamquocvinh99@gmail.com',
-                        'Subject'       =>      'Test ddddd',
-                        'Body'          =>      'Body test <a href="'.$link_active.'">'.$link_active.'</a>'
-                    );
-                    if($this->SendMail($data)){
+                    $SkeezBetMailer = new SkeezBetMailer();
+                    $SkeezBetMailer->addData($account->email, 'Forgot password', 'Body test <a href="'.$link_active.'">'.$link_active.'</a>');
+
+                    if($SkeezBetMailer->SendMail()){
                         $this->_json_result['status'] = 1;
                         $this->_json_result['message'] = array ('Instruction has been sent to your email.');
                     }
@@ -236,8 +218,8 @@ class WsController extends Controller
     }
 
     /*
-  * User BetCategories action
-  * */
+    * User BetCategories action
+    * */
     public function actionBetCategories (){
         $Categories = array();
         $categories = SkeezBetCategories::model()->findAll();
@@ -305,7 +287,7 @@ class WsController extends Controller
     /*
      * Function check login from model
      * */
-    private function checkLogin($username, $password, $remember_me = null) {
+    private function checkLogin($username, $password) {
 
         $identity = new UserIdentity($username, $password);
         $identity->authenticate();
@@ -313,40 +295,4 @@ class WsController extends Controller
             return $identity;
         } else return null;
     }
-    /*
-     * Function send mail
-     */
-    public function SendMail($data = null){
-        include_once(Yii::app()->basePath."/../../PHPMailer/PHPMailerAutoload.php");
-
-        $mail = new PHPMailer;
-        //  $mail->SMTPDebug = 1;
-        $mail->isSMTP();
-        $mail->Mailer       = 'smtp';
-        $mail->Host         = 'smtp.gmail.com';
-        $mail->SMTPAuth     = true;
-        $mail->Port         = 587;
-        $mail->Username     = $data['Username'];
-        $mail->Password     = $data['Password'];
-        $mail->SMTPSecure   = 'tls';
-        $mail->From         = $data['From'];
-        $mail->FromName     = $data['FromName'];
-        $mail->addAddress($data['addAddress'], $data['title']);
-        $mail->addReplyTo($data['addReplyTo'], $data['title']);
-        if(isset($data['addCC'])){
-            for( $i = 0 ; $i < count($data['addCC']) ; $i++ )
-                $mail->addCC($data['addCC'][$i]);
-        }
-
-        $mail->WordWrap = 50;
-        $mail->isHTML(true);
-        $mail->Subject = $data['Subject'];
-        $mail->Body    = $data['Body'];
-
-        if(!$mail->send())
-            return false;
-        else
-            return true;
-    }
-
 }
