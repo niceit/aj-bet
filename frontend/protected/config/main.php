@@ -97,6 +97,13 @@ return array(
             'secure_protocol' => 'tls',
             'from_header_email' => 'phamquocvinh99@gmail.com',
             'from_header_name' => 'SkeezBet Admin'
+        ),
+        //Email template
+        'emailTemplates' => array(
+            'welcome' => array(
+                'subject' => 'Thanks you for joining SkeezKet',
+                'template' => 'registration_welcome'
+            )
         )
 	),
 );

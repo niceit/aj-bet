@@ -10,6 +10,7 @@ class SkeezBetMailer{
 
     private $_mailer;
     private $_mailer_config;
+    private $_email_template;
 
     public function __construct(){
         $this->_mailer_config = Yii::app()->params['php_mailer'];
@@ -26,6 +27,32 @@ class SkeezBetMailer{
         $this->_mailer->FromName     = $this->_mailer_config['from_header_name'];
         $this->_mailer->WordWrap = 50;
         $this->_mailer->isHTML(true);
+        $this->_email_template = Yii::app()->params['emailTemplates'];
+    }
+
+    /*
+     * Send welcome email
+     * */
+    public function sendWelcomeEmail($to, $account) {
+        $welcome_email_content = $this->fetchEmailTemplate($this->_email_template['welcome']['template']);
+
+        if (!$welcome_email_content){
+            return false;
+        }
+
+        $match_cases = array(
+            '[FIRST_NAME]' => $account['first_name'],
+            '[USERNAME]' => $account['username'],
+            '[PASSWORD]' => $account['password']
+        );
+
+        $welcome_email_content = $this->parseEmailVariable($match_cases, $welcome_email_content);
+        $this->addData($to, $this->_email_template['welcome']['subject'], $welcome_email_content);
+
+        if ($this->_mailer->send()){
+            return true;
+        }
+        else return false;
     }
 
     /*
@@ -72,5 +99,31 @@ class SkeezBetMailer{
         }
 
         return ($this->_mailer->send());
+    }
+
+    /*
+     * Parse email content variables
+     * */
+    public function parseEmailVariable($match_cases, $email_content) {
+        foreach ($match_cases as $find => $replace) {
+            $email_content = str_replace($find, $replace, $email_content);
+        }
+        return $email_content;
+    }
+
+    /*
+     * Fetch email templates
+     * */
+    private function fetchEmailTemplate($template_name) {
+        $ROOT = $_SERVER['DOCUMENT_ROOT'];
+        $email_template_dir = $ROOT . '/frontend/protected/views/emails/';
+        $target_file = $email_template_dir . $template_name . '.php';
+        if (!file_exists($target_file)) {
+            return null;
+        }
+        else{
+            $content = Yii::app()->controller->renderFile ($target_file, array(), true);
+            return $content;
+        }
     }
 }

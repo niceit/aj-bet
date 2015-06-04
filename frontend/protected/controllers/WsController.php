@@ -18,7 +18,6 @@ class WsController extends Controller
      * User registration action
      * */
     public function actionRegister(){
-        $mailer = new PHPMailer();
         if (Yii::app()->request->isPostRequest){
             $data = Yii::app()->request->getPost('Account');
             $Account = new Accounts();
@@ -47,11 +46,16 @@ class WsController extends Controller
 
                     if ($Account->save()){
                         $this->_json_result = array('status' => 1, 'message' => array('Account created successfully'));
-                        $link_active = '?token='.$activation_token;
                         $SkeezBetMailer = new SkeezBetMailer();
-                        $SkeezBetMailer->addData($Account->email, 'Activation member', 'Body test <a href="'.$link_active.'">'.$link_active.'</a>');
-
-                        //$SkeezBetMailer->sendMailer();
+                        $account_mail = array(
+                            'first_name' => $Account->first_name,
+                            'username' => $Account->username,
+                            'password' => $data['password']
+                        );
+                        $sendMail = $SkeezBetMailer->sendWelcomeEmail($Account->email, $account_mail);
+                        if (!$sendMail){
+                            $this->_json_result = array('status' => 0, 'message' => array('Can not send email'));
+                        }
                     }
                     else {
                         $this->_json_result['message'] = $Account->getErrors();

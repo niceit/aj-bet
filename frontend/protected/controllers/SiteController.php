@@ -106,4 +106,10 @@ class SiteController extends Controller
 		Yii::app()->user->logout();
 		$this->redirect(Yii::app()->homeUrl);
 	}
+
+    public function actionTestEmailTemplate(){
+        $template_name = Yii::app()->request->getQuery('name');
+        $SkeezBetUnitTest = new SkeezBetUnitTesting();
+        $SkeezBetUnitTest->emailTemplateTesting($template_name);
+    }
 }
