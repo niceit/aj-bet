@@ -46,10 +46,7 @@ class SkeezBetMailer{
         if ($this->_mailer->send()){
             return true;
         }
-        else {
-            print_r ($this->_mailer->ErrorInfo);
-            die();
-        }
+        else return false;
     }
     /*
     * Send forgot password email
