@@ -212,7 +212,7 @@ class WsController extends Controller
                         'link'          => $link_active
                     );
 
-                    $sendMail = $SkeezBetMailer->sendForGotPasswordEmail($account->email, $account_mail);
+                    $sendMail = $SkeezBetMailer->sendForgotPasswordEmail($account->email, $account_mail);
                     if($sendMail){
                         $this->_json_result['status'] = 1;
                         $this->_json_result['message'] = array ('Instruction has been sent to your email.');

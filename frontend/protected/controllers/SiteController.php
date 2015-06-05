@@ -112,5 +112,4 @@ class SiteController extends Controller
         $SkeezBetUnitTest = new SkeezBetUnitTesting();
         $SkeezBetUnitTest->emailTemplateTesting($template_name);
     }
-
 }

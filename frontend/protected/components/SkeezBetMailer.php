@@ -11,7 +11,7 @@ class SkeezBetMailer{
     private $_mailer;
     private $_mailer_config;
     private $_email_template;
-    private $_email_template_forgot_password;
+
     public function __construct(){
         $this->_mailer_config = Yii::app()->params['php_mailer'];
         $this->_mailer = new PHPMailer();
@@ -28,7 +28,6 @@ class SkeezBetMailer{
         $this->_mailer->WordWrap = 50;
         $this->_mailer->isHTML(true);
         $this->_email_template = Yii::app()->params['emailTemplates'];
-        $this->_email_template_forgot_password = Yii::app()->params['emailTemplatesForgotPassword'];
     }
 
     /*
@@ -58,8 +57,8 @@ class SkeezBetMailer{
     /*
     * Send forgot password email
     * */
-    public function sendForGotPasswordEmail($to, $account) {
-        $forgot_email_content = $this->fetchEmailTemplate($this->_email_template_forgot_password['welcome']['template']);
+    public function sendForgotPasswordEmail($to, $account) {
+        $forgot_email_content = $this->fetchEmailTemplate($this->_email_template['forgot']['template']);
         if (!$forgot_email_content){
             return false;
         }
@@ -70,7 +69,7 @@ class SkeezBetMailer{
         );
 
         $forgot_email_content = $this->parseEmailVariable($match_cases, $forgot_email_content);
-        $this->addData($to, $this->_email_template_forgot_password['welcome']['subject'], $forgot_email_content);
+        $this->addData($to, $this->_email_template['forgot']['subject'], $forgot_email_content);
 
         if ($this->_mailer->send()){
             return true;
