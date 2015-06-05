@@ -15,14 +15,8 @@ class SkeezBetMailer{
     public function __construct(){
         $this->_mailer_config = Yii::app()->params['php_mailer'];
         $this->_mailer = new PHPMailer();
-        $this->_mailer->isSMTP();
-        $this->_mailer->Mailer       = $this->_mailer_config['protocol'];
-        $this->_mailer->Host         = $this->_mailer_config['host'];
-        $this->_mailer->SMTPAuth     = true;
-        $this->_mailer->Port         = $this->_mailer_config['port'];
-        $this->_mailer->Username     = $this->_mailer_config['username'];
-        $this->_mailer->Password     = $this->_mailer_config['password'];
-        $this->_mailer->SMTPSecure   = $this->_mailer_config['secure_protocol'];
+        $this->_mailer->isMail();
+        $this->_mailer->SMTPAuth     = false;
         $this->_mailer->From         = $this->_mailer_config['from_header_email'];
         $this->_mailer->FromName     = $this->_mailer_config['from_header_name'];
         $this->_mailer->WordWrap = 50;
@@ -52,7 +46,10 @@ class SkeezBetMailer{
         if ($this->_mailer->send()){
             return true;
         }
-        else return false;
+        else {
+            print_r ($this->_mailer->ErrorInfo);
+            die();
+        }
     }
     /*
     * Send forgot password email
