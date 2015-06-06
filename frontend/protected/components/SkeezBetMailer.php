@@ -11,7 +11,7 @@ class SkeezBetMailer{
     private $_mailer;
     private $_mailer_config;
     private $_email_template;
-
+    private $_email_template_forgot_password;
     public function __construct(){
         $this->_mailer_config = Yii::app()->params['php_mailer'];
         $this->_mailer = new PHPMailer();
@@ -28,6 +28,7 @@ class SkeezBetMailer{
         $this->_mailer->WordWrap = 50;
         $this->_mailer->isHTML(true);
         $this->_email_template = Yii::app()->params['emailTemplates'];
+        $this->_email_template_forgot_password = Yii::app()->params['emailTemplatesForgotPassword'];
     }
 
     /*
@@ -48,6 +49,28 @@ class SkeezBetMailer{
 
         $welcome_email_content = $this->parseEmailVariable($match_cases, $welcome_email_content);
         $this->addData($to, $this->_email_template['welcome']['subject'], $welcome_email_content);
+
+        if ($this->_mailer->send()){
+            return true;
+        }
+        else return false;
+    }
+    /*
+    * Send forgot password email
+    * */
+    public function sendForGotPasswordEmail($to, $account) {
+        $forgot_email_content = $this->fetchEmailTemplate($this->_email_template_forgot_password['welcome']['template']);
+        if (!$forgot_email_content){
+            return false;
+        }
+
+        $match_cases = array(
+            '[FIRST_NAME]' => $account['first_name'],
+            '[LINK]' => $account['link']
+        );
+
+        $forgot_email_content = $this->parseEmailVariable($match_cases, $forgot_email_content);
+        $this->addData($to, $this->_email_template_forgot_password['welcome']['subject'], $forgot_email_content);
 
         if ($this->_mailer->send()){
             return true;
@@ -117,6 +140,7 @@ class SkeezBetMailer{
     private function fetchEmailTemplate($template_name) {
         $ROOT = $_SERVER['DOCUMENT_ROOT'];
         $email_template_dir = $ROOT . '/frontend/protected/views/emails/';
+
         $target_file = $email_template_dir . $template_name . '.php';
         if (!file_exists($target_file)) {
             return null;

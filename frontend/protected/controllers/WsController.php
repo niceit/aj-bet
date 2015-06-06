@@ -203,11 +203,17 @@ class WsController extends Controller
                 if($account->save()){
 
                     // send link mail forgot password
-                    $link_active = '?token='.$activation_token;
-                    $SkeezBetMailer = new SkeezBetMailer();
-                    $SkeezBetMailer->addData($account->email, 'Forgot password', 'Body test <a href="'.$link_active.'">'.$link_active.'</a>');
+                    $link_active = 'http://www.betskeez.com/forgot?token='.$activation_token;
 
-                    if($SkeezBetMailer->SendMail()){
+                    $SkeezBetMailer = new SkeezBetMailer();
+                    $account_mail = array(
+                        'first_name'    => $account->first_name,
+                        'username'      => $account->username,
+                        'link'          => $link_active
+                    );
+
+                    $sendMail = $SkeezBetMailer->sendForGotPasswordEmail($account->email, $account_mail);
+                    if($sendMail){
                         $this->_json_result['status'] = 1;
                         $this->_json_result['message'] = array ('Instruction has been sent to your email.');
                     }

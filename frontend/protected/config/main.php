@@ -104,6 +104,12 @@ return array(
                 'subject' => 'Thanks you for joining SkeezKet',
                 'template' => 'registration_welcome'
             )
+        ),
+        'emailTemplatesForgotPassword' => array(
+            'welcome' => array(
+                'subject' => 'You are requested to reset password',
+                'template' => 'forgot_password'
+            )
         )
-	),
+    )
 );
