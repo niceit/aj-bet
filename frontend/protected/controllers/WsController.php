@@ -283,21 +283,21 @@ class WsController extends Controller
         $this->sendResponse("application/json", $this->_json_result);
     }
     /*
-   * List Leagues action
+   * List Leagues
    * */
-    public function actionLeague(){
+    public function actionLeagues(){
         if (Yii::app()->request->isPostRequest) {
             $Leagues = array();
             $category_id = Yii::app()->request->getPost('category_id');
-            if(empty($category_id)){
-                $this->_json_result['message'] = array('Invalid Sub Categories information');
+            if (empty($category_id)){
+                $this->_json_result['message'] = array('Invalid request category');
                 $this->sendResponse("application/json", $this->_json_result);
             }
 
             if (SkeezBetSubCategories::model()->findByPk($category_id)) {
-                $leagues = SkeezLeagues::model()->findAll('category_id = '.$category_id);
-                if($leagues){
-                    foreach($leagues as $league){
+                $leagues = SkeezLeagues::model()->findAll('category_id = ' . $category_id);
+                if (!empty($leagues)) {
+                    foreach ($leagues as $league) {
                         $Leagues[] = array(
                             'id'    => $league->id,
                             'name'  => $league->name
@@ -305,53 +305,53 @@ class WsController extends Controller
                     }
 
                     $this->_json_result['status'] = 1;
-                    $this->_json_result['message'] = array('Leagues successfully loaded');
+                    $this->_json_result['message'] = array('Leagues loaded successfully');
                     $this->_json_result['Leagues'] = array($Leagues);
                 }
-                else{
-                    $this->_json_result['message'] = array('There is no leagues available');
-                }
+                else $this->_json_result['message'] = array('There is no available league');
             }
-            else $this->_json_result['message'] = array('Parent leagues was not found');
+            else $this->_json_result['message'] = array('Category was not found');
         }
         $this->sendResponse("application/json", $this->_json_result);
     }
+
     /*
-* List Teams action
-* */
+    * List available matches
+    * */
     public function actionMatches(){
         if (Yii::app()->request->isPostRequest) {
             $TeamMatches = array();
             $League = Yii::app()->request->getPost('League');
-            if(empty($League)){
-                $this->_json_result['message'] = array('Invalid Leagues information');
+            if (empty($League)){
+                $this->_json_result['message'] = array('Invalid League request');
                 $this->sendResponse("application/json", $this->_json_result);
             }
 
             foreach($League as $league){
                 $getTeamMatches = SkeezTeamMatches::model()->getTeamMatches($league);
-                foreach($getTeamMatches as $teammatches){
-                    $homeMatches =  SkeezTeams::model()->findByPk($teammatches['home']);
-                    $opponentMatches = SkeezTeams::model()->findByPk($teammatches['opponent']);
+                foreach($getTeamMatches as $teamMatches){
+                    $homeMatches =  SkeezTeams::model()->findByPk($teamMatches['home']);
+                    $opponentMatches = SkeezTeams::model()->findByPk($teamMatches['opponent']);
 
                     $TeamMatches[] = array(
-                        'home'      =>  array(
+                        'home'          =>  array(
                                         'name'  =>  $homeMatches->name,
-                                        'logo'  =>  Yii::app()->params['base_url_image'].$homeMatches->logo
+                                        'logo'  =>  Yii::app()->params['base_url_image'] . $homeMatches->logo
                                     ),
-                        'opponent'  =>  array(
+                        'opponent'      =>  array(
                                         'name'  =>  $opponentMatches->name,
-                                        'logo'  =>  Yii::app()->params['base_url_image'].$opponentMatches->logo
+                                        'logo'  =>  Yii::app()->params['base_url_image'] . $opponentMatches->logo
                                     ),
-                        'time_start'    =>  $teammatches['match_time']
+                        'time_start'    =>  $teamMatches['match_time']
                     );
                 }
             }
-            if($TeamMatches){
+            if (!empty($TeamMatches)){
                 $this->_json_result['status'] = 1;
                 $this->_json_result['message'] = array('TeamMatches successfully loaded');
                 $this->_json_result['TeamMatches'] = array($TeamMatches);
-            }else $this->_json_result['message'] = array('Parent TeamMatches was not found');
+            }
+            else $this->_json_result['message'] = array('Parent TeamMatches was not found');
         }
         $this->sendResponse("application/json", $this->_json_result);
     }

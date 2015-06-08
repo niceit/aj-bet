@@ -85,7 +85,7 @@ return array(
 	// using Yii::app()->params['paramName']
 	'params'=>array(
 		// this is used in contact page
-        'base_url_image' => 'http://api.betskeez.com/frontend/assets/team/',
+        'base_url' => 'http://api.betskeez.com/',
 		'adminEmail' => 'webmaster@example.com',
         'db_prefix' => 'skeez_',
         'php_mailer' => array(
