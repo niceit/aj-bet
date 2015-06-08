@@ -228,7 +228,7 @@ class WsController extends Controller
     }
 
     /*
-    * User BetCategories action
+    * List BetCategories action
     * */
     public function actionBetCategories (){
         $Categories = array();
@@ -249,7 +249,7 @@ class WsController extends Controller
     }
 
     /*
-    * User BetCategories action
+    * List BetCategories action
     * */
     public function actionBetSubCategories (){
         if (Yii::app()->request->isPostRequest) {
@@ -279,6 +279,79 @@ class WsController extends Controller
                 }
             }
             else $this->_json_result['message'] = array('Parent category was not found');
+        }
+        $this->sendResponse("application/json", $this->_json_result);
+    }
+    /*
+   * List Leagues action
+   * */
+    public function actionLeague(){
+        if (Yii::app()->request->isPostRequest) {
+            $Leagues = array();
+            $category_id = Yii::app()->request->getPost('category_id');
+            if(empty($category_id)){
+                $this->_json_result['message'] = array('Invalid Sub Categories information');
+                $this->sendResponse("application/json", $this->_json_result);
+            }
+
+            if (SkeezBetSubCategories::model()->findByPk($category_id)) {
+                $leagues = SkeezLeagues::model()->findAll('category_id = '.$category_id);
+                if($leagues){
+                    foreach($leagues as $league){
+                        $Leagues[] = array(
+                            'id'    => $league->id,
+                            'name'  => $league->name
+                        );
+                    }
+
+                    $this->_json_result['status'] = 1;
+                    $this->_json_result['message'] = array('Leagues successfully loaded');
+                    $this->_json_result['Leagues'] = array($Leagues);
+                }
+                else{
+                    $this->_json_result['message'] = array('There is no leagues available');
+                }
+            }
+            else $this->_json_result['message'] = array('Parent leagues was not found');
+        }
+        $this->sendResponse("application/json", $this->_json_result);
+    }
+    /*
+* List Teams action
+* */
+    public function actionMatches(){
+        if (Yii::app()->request->isPostRequest) {
+            $TeamMatches = array();
+            $League = Yii::app()->request->getPost('League');
+            if(empty($League)){
+                $this->_json_result['message'] = array('Invalid Leagues information');
+                $this->sendResponse("application/json", $this->_json_result);
+            }
+
+            foreach($League as $league){
+                $getTeamMatches = SkeezTeamMatches::model()->getTeamMatches($league);
+                foreach($getTeamMatches as $teammatches){
+                    $homeMatches =  SkeezTeams::model()->findByPk($teammatches['home']);
+                    $opponentMatches = SkeezTeams::model()->findByPk($teammatches['opponent']);
+
+                    $TeamMatches[] = array(
+                        'home'      =>  array(
+                                        'name'  =>  $homeMatches->name,
+                                        'logo'  =>  Yii::app()->params['base_url_image'].$homeMatches->logo
+                                    ),
+                        'opponent'  =>  array(
+                                        'name'  =>  $opponentMatches->name,
+                                        'logo'  =>  Yii::app()->params['base_url_image'].$opponentMatches->logo
+                                    ),
+                        'time_start'    =>  $teammatches['match_time']
+                    );
+                }
+            }
+            if($TeamMatches){
+                $this->_json_result['status'] = 1;
+                $this->_json_result['message'] = array('TeamMatches successfully loaded');
+                $this->_json_result['TeamMatches'] = array($TeamMatches);
+            }else $this->_json_result['message'] = array('Parent TeamMatches was not found');
         }
         $this->sendResponse("application/json", $this->_json_result);
     }
