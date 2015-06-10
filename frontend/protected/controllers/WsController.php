@@ -351,7 +351,7 @@ class WsController extends Controller
                 $this->_json_result['message'] = array('TeamMatches successfully loaded');
                 $this->_json_result['TeamMatches'] = array($TeamMatches);
             }
-            else $this->_json_result['message'] = array('Parent TeamMatches was not found');
+            else $this->_json_result['message'] = array('There is no result');
         }
         $this->sendResponse("application/json", $this->_json_result);
     }
