@@ -357,6 +357,57 @@ class WsController extends Controller
     }
 
     /*
+  *  AddFriend
+  * */
+    public function actionAddFriend(){
+        if (Yii::app()->request->isPostRequest) {
+            $account_id = Yii::app()->request->getPost('account_id');
+            $friend_id = Yii::app()->request->getPost('friend_id');
+            $message = Yii::app()->request->getPost('message');
+            $Skeezfirend = SkeezFriends::model()->findByPk('friend_id = '.$friend_id.' and account_id = '.$account_id);
+
+            if(count($Skeezfirend)>0){
+                $this->_json_result['message'] = array('You have been more');
+                $this->sendResponse("application/json", $this->_json_result);
+            }
+            $account =  Accounts::model()->findByPk($account_id);
+            $friends =  Accounts::model()->findByPk($friend_id);
+
+
+            if($account &&  $friends){
+                $friend = new SkeezFriends();
+                $friend->setAttribute('account_id', $account_id);
+                $friend->setAttribute('friend_id', $friend_id);
+                $friend->setAttribute('message', $message);
+                $friend->setAttribute('approve', 0);
+                $friend->setAttribute('created', new CDbExpression('NOW()'));
+
+                if($friend->save()){
+                    $this->_json_result['status'] = 1;
+                    $this->_json_result['message'] = array('You have added new friends!');
+
+                    $SkeezBetMailer = new SkeezBetMailer();
+
+                    $account_mail = array(
+                        'account_first_name'    => $account->first_name,
+                        'account_username'      => $account->username
+                    );
+                    $friend_mail = array(
+                        'friends_first_name'    => $friends->first_name,
+                        'friends_username'      => $friends->username
+                    );
+
+                    $sendMail = $SkeezBetMailer->sendAddFriendEmail($friends->email, $account_mail,$friend_mail);
+                    if(!$sendMail){
+                        $this->_json_result['message'] = array ('Could not send email');
+                    }
+                }else $this->_json_result['message'] = $friend->getErrors();
+            }
+            else $this->_json_result['message'] = array('Friends was not found');
+        }
+        $this->sendResponse("application/json", $this->_json_result);
+    }
+    /*
      * Send back request to client
      * */
     private function sendResponse($type, $data, $json_data = true){

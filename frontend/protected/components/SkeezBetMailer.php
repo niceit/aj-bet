@@ -72,6 +72,29 @@ class SkeezBetMailer{
     }
 
     /*
+    * Send add friend
+    * */
+    public function sendAddFriendEmail($to, $account, $friend) {
+        $add_friend_email_content = $this->fetchEmailTemplate($this->_email_template['email_friend']['template']);
+        if (!$add_friend_email_content){
+            return false;
+        }
+
+        $match_cases = array(
+            '[ACCOUNT_FIRST_NAME]' => $account['account_first_name'],
+            '[FRIENDS_FIRST_NAME]' => $friend['friends_first_name']
+        );
+
+        $add_friend_email_content = $this->parseEmailVariable($match_cases, $add_friend_email_content);
+        $this->addData($to, $this->_email_template['email_friend']['subject'], $add_friend_email_content);
+
+        if ($this->_mailer->send()){
+            return true;
+        }
+        else return false;
+    }
+
+    /*
      * Set data for mailer
      * */
     public function addData($to, $subject, $body) {

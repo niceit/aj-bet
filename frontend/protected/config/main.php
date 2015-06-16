@@ -101,7 +101,11 @@ return array(
             'forgot' => array(
                 'subject' => 'You requested to reset password',
                 'template' => 'forgot_password'
+            ),
+            'email_friend' => array(
+                    'subject' => 'You wants to add you to the list',
+                    'template' => 'email_friend_notification'
+                )
             )
-        )
     )
 );
