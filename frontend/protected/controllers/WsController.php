@@ -535,6 +535,7 @@ class WsController extends Controller
             $bet_id = Yii::app()->request->getPost('bet_id');
             $bets = SkeezBets::model()->findByPk($bet_id);
             $bets->setAttribute('approve',1);
+            $bets->setAttribute('modified', new CDbExpression('NOW()'));
             if($bets->save()){
                 $this->_json_result['status'] = 1;
                 $this->_json_result['message'] = array('Approve success!');
