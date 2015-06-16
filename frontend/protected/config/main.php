@@ -109,6 +109,14 @@ return array(
             'approve_email_friend' => array(
                 'subject' => 'You have confirmed',
                 'template' => 'approve_email_friend_notification'
+            ),
+            'bets_email_friend' => array(
+                'subject' => 'you have wagered match',
+                'template' => 'bets_email_friend_notification'
+            ),
+            'approve_bets_email_friend' => array(
+                'subject' => 'You have bets confirmed',
+                'template' => 'approve_bets_email_friend_notification'
             )
         )
     )
