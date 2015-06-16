@@ -105,7 +105,11 @@ return array(
             'email_friend' => array(
                     'subject' => 'You wants to add you to the list',
                     'template' => 'email_friend_notification'
-                )
+                ),
+            'approve_email_friend' => array(
+                'subject' => 'You have confirmed',
+                'template' => 'approve_email_friend_notification'
             )
+        )
     )
 );

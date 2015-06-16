@@ -364,7 +364,7 @@ class WsController extends Controller
             $account_id = Yii::app()->request->getPost('account_id');
             $friend_id = Yii::app()->request->getPost('friend_id');
             $message = Yii::app()->request->getPost('message');
-            $Skeezfirend = SkeezFriends::model()->findByPk('friend_id = '.$friend_id.' and account_id = '.$account_id);
+            $Skeezfirend = SkeezFriends::model()->find('friend_id = '.$friend_id.' and account_id = '.$account_id);
 
             if(count($Skeezfirend)>0){
                 $this->_json_result['message'] = array('You have been more');
@@ -374,7 +374,7 @@ class WsController extends Controller
             $friends =  Accounts::model()->findByPk($friend_id);
 
 
-            if($account &&  $friends){
+            if($account &&  $friends && $account_id != $friend_id ){
                 $friend = new SkeezFriends();
                 $friend->setAttribute('account_id', $account_id);
                 $friend->setAttribute('friend_id', $friend_id);
@@ -389,14 +389,11 @@ class WsController extends Controller
                     $SkeezBetMailer = new SkeezBetMailer();
 
                     $account_mail = array(
-                        'account_first_name'    => $account->first_name,
-                        'account_username'      => $account->username
+                        'account_first_name'    => $account->first_name
                     );
                     $friend_mail = array(
-                        'friends_first_name'    => $friends->first_name,
-                        'friends_username'      => $friends->username
+                        'friends_first_name'    => $friends->first_name
                     );
-
                     $sendMail = $SkeezBetMailer->sendAddFriendEmail($friends->email, $account_mail,$friend_mail);
                     if(!$sendMail){
                         $this->_json_result['message'] = array ('Could not send email');
@@ -407,6 +404,52 @@ class WsController extends Controller
         }
         $this->sendResponse("application/json", $this->_json_result);
     }
+
+    /*
+ *  Approve account
+ * */
+    public function actionApprove()
+    {
+        if (Yii::app()->request->isPostRequest) {
+            $account_id = Yii::app()->request->getPost('account_id');
+            $friend_id = Yii::app()->request->getPost('friend_id');
+            $friend = SkeezFriends::model()->find('friend_id = '.$friend_id.' and account_id = '.$account_id);
+            if($friend->approve == 1)
+            {
+                $this->_json_result['message'] = array('Then you have confirmed');
+                $this->sendResponse("application/json", $this->_json_result);
+            }
+
+            if(count($friend)>0 && $account_id != $friend_id ){
+                $friend->setAttribute('approve', 1);
+                $friend->setAttribute('modified', new CDbExpression('NOW()'));
+                if($friend->save()){
+                    $account =  Accounts::model()->findByPk($account_id);
+                    $friends =  Accounts::model()->findByPk($friend_id);
+
+                    $this->_json_result['status'] = 1;
+                    $this->_json_result['message'] = array('You have added new friends!');
+
+                    $SkeezBetMailer = new SkeezBetMailer();
+
+                    $account_mail = array(
+                        'account_first_name'    => $account->first_name
+                    );
+                    $friend_mail = array(
+                        'friends_first_name'    => $friends->first_name
+                    );
+
+                    $sendMail = $SkeezBetMailer->sendApproveAddFriendEmail($account->email, $account_mail,$friend_mail);
+                    if(!$sendMail){
+                        $this->_json_result['message'] = array ('Could not send email');
+                    }
+                }
+                else $this->_json_result['message'] = $friend->getErrors();
+            }
+        }
+        $this->sendResponse("application/json", $this->_json_result);
+    }
+
     /*
      * Send back request to client
      * */
