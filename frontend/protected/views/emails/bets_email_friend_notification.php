@@ -95,7 +95,7 @@
                                                                                   <p style="color: #7b7a7a; font-size: 14px; margin: 0px; font-family: Arial,Helvetica,sans-serif; padding: 0px; line-height: 150%; text-align: justify;" class="mld-paragraph">
                                                                                       Hi [FRIENDS_FIRST_NAME], [ACCOUNT_FIRST_NAME] bets matches you as his (her) friend, you can login to BetSkeez to approve.<br></p>
                                                                                   <p style="color: #7b7a7a; font-size: 14px; margin: 0px; font-family: Arial,Helvetica,sans-serif; padding: 0px; line-height: 150%; text-align: justify;" class="mld-paragraph"> <br/><br/>
-                                                                                      <table style="margin: 0 auto; text-align: center">
+                                                                                      <table cellpadding="10" style="margin: 0 auto; text-align: center;">
                                                                                         <tr>
                                                                                             <td>[NAME_HOME]</td>
                                                                                             <td>[NAME_OPPONENT]</td>
