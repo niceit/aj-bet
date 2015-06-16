@@ -549,7 +549,7 @@ class WsController extends Controller
                     'friends_first_name'    => $friends->first_name
                 );
 
-                $sendMail = $SkeezBetMailer->sendApproveBetsFriendEmail($friends->email, $account_mail);
+                $sendMail = $SkeezBetMailer->sendApproveBetsFriendEmail($account->email, $account_mail);
                 if(!$sendMail){
                     $this->_json_result['message'] = array ('Could not send email');
                 }
