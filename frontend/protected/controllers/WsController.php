@@ -9,6 +9,16 @@ class WsController extends Controller
         $this->_json_result = array('status' => 0, 'message' => array('Nothing performed'));
     }
 
+    //Support json decode debug
+    private static function parsePostJsonRequest ($request) {
+        $debug_mode = Yii::app()->request->getQuery ('debug');
+
+        if ($debug_mode) {
+            return $request;
+        }
+        else return json_decode ($request, true);
+    }
+
 	public function actionIndex()
 	{
 		$this->sendResponse("application/json", $this->_json_result);
@@ -20,6 +30,9 @@ class WsController extends Controller
     public function actionRegister(){
         if (Yii::app()->request->isPostRequest){
             $data = Yii::app()->request->getPost('Account');
+
+            $data = self::parsePostJsonRequest ($data);
+
             $Account = new Accounts();
             $Account->attributes = $data;
 
@@ -282,6 +295,7 @@ class WsController extends Controller
         }
         $this->sendResponse("application/json", $this->_json_result);
     }
+
     /*
    * List Leagues
    * */
@@ -322,6 +336,9 @@ class WsController extends Controller
         if (Yii::app()->request->isPostRequest) {
             $TeamMatches = array();
             $League = Yii::app()->request->getPost('League');
+
+            $League = self::parsePostJsonRequest ($League);
+
             if (empty($League)){
                 $this->_json_result['message'] = array('Invalid League request');
                 $this->sendResponse("application/json", $this->_json_result);
@@ -357,146 +374,168 @@ class WsController extends Controller
     }
 
     /*
-  *  AddFriend
-  * */
+      *  AddFriend
+      * */
     public function actionAddFriend(){
         if (Yii::app()->request->isPostRequest) {
-            $account_id = Yii::app()->request->getPost('account_id');
-            $friend_id = Yii::app()->request->getPost('friend_id');
-            $message = Yii::app()->request->getPost('message');
-            $Skeezfirend = SkeezFriends::model()->find('friend_id = '.$friend_id.' and account_id = '.$account_id);
 
-            if(count($Skeezfirend)>0){
-                $this->_json_result['message'] = array('You have been more');
-                $this->sendResponse("application/json", $this->_json_result);
+            $account_id = Yii::app()->request->getPost ('account_id');
+            $friend_id = Yii::app()->request->getPost ('friend_id');
+            $message = Yii::app()->request->getPost ('message');
+
+            $skeezFriend = SkeezFriends::model()->find ('friend_id = ' . $friend_id . ' AND account_id = ' . $account_id);
+
+            if (!empty($skeezFriend)) {
+                $this->_json_result['message'] = array('You have added this friend before.');
+                $this->sendResponse ("application/json", $this->_json_result);
             }
-            $account =  Accounts::model()->findByPk($account_id);
-            $friends =  Accounts::model()->findByPk($friend_id);
+
+            $account =  Accounts::model()->findByPk ($account_id);
+            $friend =  Accounts::model()->findByPk ($friend_id);
 
 
-            if($account &&  $friends && $account_id != $friend_id ){
-                $friend = new SkeezFriends();
-                $friend->setAttribute('account_id', $account_id);
-                $friend->setAttribute('friend_id', $friend_id);
-                $friend->setAttribute('message', $message);
-                $friend->setAttribute('approve', 0);
-                $friend->setAttribute('created', new CDbExpression('NOW()'));
+            if (!empty($account) &&  !empty($friend) && ($account_id != $friend_id)) {
 
-                if($friend->save()){
+                $addFriend = new SkeezFriends();
+                $addFriend->setAttribute('account_id', $account_id);
+                $addFriend->setAttribute('friend_id', $friend_id);
+                $addFriend->setAttribute('message', $message);
+                $addFriend->setAttribute('approve', 0);
+                $addFriend->setAttribute('created', new CDbExpression('NOW()'));
+
+                if ($addFriend->save()) {
                     $this->_json_result['status'] = 1;
-                    $this->_json_result['message'] = array('You have added new friends!');
+                    $this->_json_result['message'] = array('Your friend request has been sent.');
 
                     $SkeezBetMailer = new SkeezBetMailer();
 
-                    $account_mail = array(
-                        'account_first_name'    => $account->first_name
-                    );
-                    $friend_mail = array(
-                        'friends_first_name'    => $friends->first_name
-                    );
-                    $sendMail = $SkeezBetMailer->sendAddFriendEmail($friends->email, $account_mail,$friend_mail);
-                    if(!$sendMail){
+                    $sendMail = $SkeezBetMailer->sendAddFriendEmail ($friend->email, $account->first_name, $friend->first_name);
+
+                    if (!$sendMail) {
                         $this->_json_result['message'] = array ('Could not send email');
                     }
-                }else $this->_json_result['message'] = $friend->getErrors();
+
+                }
+                else $this->_json_result['message'] = $addFriend->getErrors();
             }
-            else $this->_json_result['message'] = array('Friends was not found');
+            else $this->_json_result['message'] = array('Friend account was not found.');
         }
         $this->sendResponse("application/json", $this->_json_result);
     }
 
     /*
- *  Approve account
- * */
-    public function actionApprove()
-    {
+     *  Approve Add friend request
+     * */
+    public function actionApproveFriend() {
         if (Yii::app()->request->isPostRequest) {
-            $account_id = Yii::app()->request->getPost('account_id');
-            $friend_id = Yii::app()->request->getPost('friend_id');
-            $friend = SkeezFriends::model()->find('friend_id = '.$friend_id.' and account_id = '.$account_id);
-            if($friend->approve == 1)
-            {
-                $this->_json_result['message'] = array('Then you have confirmed');
+
+            $account_id = Yii::app()->request->getPost ('account_id');
+            $friend_id = Yii::app()->request->getPost ('friend_id');
+            $accept_mode = Yii::app()->request->getPost ('accept');
+
+            $friend = SkeezFriends::model()->find('friend_id = ' . $friend_id . ' AND account_id = ' . $account_id);
+
+            if (empty($friend)){
+                $this->_json_result['message'] = array('Friend request session was not found.');
                 $this->sendResponse("application/json", $this->_json_result);
             }
 
-            if(count($friend)>0 && $account_id != $friend_id ){
-                $friend->setAttribute('approve', 1);
+            if($friend->approve == 1) {
+                $this->_json_result['message'] = array('Friend request had been approved.');
+                $this->sendResponse("application/json", $this->_json_result);
+            }
+
+            if ($account_id != $friend_id ) {
+
+                switch ($accept_mode) {
+                    case 1 : //Accept request
+                        $friend->setAttribute ('approve', 1);
+                        $message = 'You approved friend request';
+                        break;
+                    case 2 : //Decline request
+                        $friend->setAttribute ('approve', 2);
+                        $message = 'You declined friend request';
+                        break;
+                    default :
+                        $this->_json_result['message'] = array('Your operation was not allowed');
+                        $this->sendResponse ("application/json", $this->_json_result);
+                        break;
+                }
+
                 $friend->setAttribute('modified', new CDbExpression('NOW()'));
-                if($friend->save()){
-                    $account =  Accounts::model()->findByPk($account_id);
-                    $friends =  Accounts::model()->findByPk($friend_id);
+
+                if ($friend->save()) {
+                    $account =  Accounts::model()->findByPk ($account_id);
+                    $friend =  Accounts::model()->findByPk ($friend_id);
 
                     $this->_json_result['status'] = 1;
-                    $this->_json_result['message'] = array('Approve success!');
+                    $this->_json_result['message'] = array($message);
 
                     $SkeezBetMailer = new SkeezBetMailer();
 
-                    $account_mail = array(
-                        'account_first_name'    => $account->first_name
-                    );
-                    $friend_mail = array(
-                        'friends_first_name'    => $friends->first_name
-                    );
+                    $sendMail = $SkeezBetMailer->sendApproveAddFriendEmail($account->email, $account->first_name, $friend->first_name, $accept_mode);
 
-                    $sendMail = $SkeezBetMailer->sendApproveAddFriendEmail($account->email, $account_mail,$friend_mail);
-                    if(!$sendMail){
+                    if (!$sendMail) {
                         $this->_json_result['message'] = array ('Could not send email');
                     }
                 }
                 else $this->_json_result['message'] = $friend->getErrors();
             }
+            else $this->_json_result['message'] = 'Your request was not allowed';
         }
         $this->sendResponse("application/json", $this->_json_result);
     }
 
     /*
-    *  Bets account
+    *  Bets between user
     * */
     public function actionBet()
     {
         if (Yii::app()->request->isPostRequest) {
+
             $account_id = Yii::app()->request->getPost('account_id');
             $friend_id = Yii::app()->request->getPost('friend_id');
             $match_id = Yii::app()->request->getPost('match_id');
             $score_1 = Yii::app()->request->getPost('score_1');
             $score_2 = Yii::app()->request->getPost('score_2');
 
-            $skeezbet = new SkeezBets();
-            $skeezbet->setAttribute('account_id',$account_id);
-            $skeezbet->setAttribute('friend_id',$friend_id);
-            $skeezbet->setAttribute('match_id',$match_id);
-            $skeezbet->setAttribute('score_1',$score_1);
-            $skeezbet->setAttribute('score_2',$score_2);
-            $skeezbet->setAttribute('approve',0);
-            $skeezbet->setAttribute('created', new CDbExpression('NOW()'));
-            if($skeezbet->validate()){
+            $skeezBet = new SkeezBets();
+            $skeezBet->setAttribute ('account_id', $account_id);
+            $skeezBet->setAttribute ('friend_id', $friend_id);
+            $skeezBet->setAttribute ('match_id', $match_id);
+            $skeezBet->setAttribute ('score_1', $score_1);
+            $skeezBet->setAttribute ('score_2', $score_2);
+            $skeezBet->setAttribute ('approve', 0);
+            $skeezBet->setAttribute( 'created', new CDbExpression('NOW()'));
 
-                $account =  Accounts::model()->findByPk($account_id);
-                $friends =  Accounts::model()->findByPk($friend_id);
+            if ($skeezBet->validate()) {
 
-                if($account && $friends){
-                    $bets = SkeezBets::model()->find('friend_id = '.$friend_id.' and account_id = '.$account_id);
-                    if(count($bets)>0){
-                        $this->_json_result['message'] = array('you have wagered Match');
+                $account =  Accounts::model()->findByPk ($account_id);
+                $friend =  Accounts::model()->findByPk ($friend_id);
+
+                if (!empty($account) && !empty($friend)){
+                    $bet = SkeezBets::model()->find('friend_id = ' . $friend_id . ' AND account_id = ' . $account_id);
+
+                    if (!empty($bet)>0){
+                        $this->_json_result['message'] = array('You have sent this match to this friend before.');
                         $this->sendResponse("application/json", $this->_json_result);
                     }
                 }
                 else{
-                    $this->_json_result['message'] = array('Please check accounts');
+                    $this->_json_result['message'] = array('Your account or friend account was not found.ß');
                     $this->sendResponse("application/json", $this->_json_result);
                 }
 
 
-                if($skeezbet->save()){
+                if ($skeezBet->save()) {
                     $this->_json_result['status'] = 1;
-                    $this->_json_result['message'] = array('You have bets new friends!');
+                    $this->_json_result['message'] = array('Bet has been sent.');
 
-                    $matchs = SkeezMatches::model()->findByPk($match_id);
-                    $matchs_teams = SkeezTeamMatches::model()->findByPk($matchs->team_match);
+                    $matchs = SkeezMatches::model()->findByPk ($match_id);
+                    $matchs_teams = SkeezTeamMatches::model()->findByPk ($matchs->team_match);
 
-                    $home = SkeezTeams::model()->findByPk($matchs_teams->home);
-                    $opponent = SkeezTeams::model()->findByPk($matchs_teams->opponent);
+                    $home = SkeezTeams::model()->findByPk ($matchs_teams->home);
+                    $opponent = SkeezTeams::model()->findByPk ($matchs_teams->opponent);
 
                     $SkeezBetMailer = new SkeezBetMailer();
 
@@ -512,53 +551,82 @@ class WsController extends Controller
                             'score' => $score_2
                         ),
                         'account_first_name'    => $account->first_name,
-                        'friends_first_name'    => $friends->first_name
+                        'friends_first_name'    => $friend->first_name
                     );
 
-                    $sendMail = $SkeezBetMailer->sendAddBetsFriendEmail($friends->email, $account_mail);
+                    $sendMail = $SkeezBetMailer->sendAddBetsFriendEmail($friend->email, $account_mail);
+
                     if(!$sendMail){
                         $this->_json_result['message'] = array ('Could not send email');
                     }
-                }else $this->_json_result['message'] = $skeezbet->getErrors();
-            } else $this->_json_result['message'] = $skeezbet->getErrors();
+                }
+                else $this->_json_result['message'] = $skeezBet->getErrors();
+            }
+            else $this->_json_result['message'] = $skeezBet->getErrors();
 
         }
         $this->sendResponse("application/json", $this->_json_result);
     }
 
     /*
-  *  Bets account
-  * */
+      *  Bets account
+      * */
     public function actionApproveBet()
     {
         if (Yii::app()->request->isPostRequest) {
-            $bet_id = Yii::app()->request->getPost('bet_id');
-            $bets = SkeezBets::model()->findByPk($bet_id);
-            $bets->setAttribute('approve',1);
-            $bets->setAttribute('modified', new CDbExpression('NOW()'));
-            if($bets->save()){
-                $this->_json_result['status'] = 1;
-                $this->_json_result['message'] = array('Approve success!');
 
-                $account =  Accounts::model()->findByPk($bets->account_id);
-                $friends =  Accounts::model()->findByPk($bets->friend_id);
+            $bet_id = Yii::app()->request->getPost('bet_id');
+            $accept_mode = Yii::app()->request->getPost('accept');
+
+            $bet = SkeezBets::model()->findByPk ($bet_id);
+
+            if (!empty($bet)) {
+                $this->_json_result['message'] = array('Bet session was not found.');
+                $this->sendResponse ("application/json", $this->_json_result);
+            }
+
+            //Checking for approve or decline the bet
+            switch ($accept_mode) {
+                case 1 : //Accept
+                    $bet->setAttribute('approve', 1);
+                    $message = 'Bet has been approved';
+                    break;
+                case 2 : //Decline
+                    $bet->setAttribute('approve', 2);
+                    $message = 'Bet has been declined';
+                    break;
+                default :
+                    $this->_json_result['message'] = array('Your operation was not allowed.');
+                    $this->sendResponse ("application/json", $this->_json_result);
+                    break;
+            }
+
+            $bet->setAttribute('modified', new CDbExpression('NOW()'));
+            if ($bet->save()) {
+                $this->_json_result['status'] = 1;
+
+                $this->_json_result['message'] = array ($message);
+
+                $account =  Accounts::model()->findByPk($bet->account_id);
+                $friend =  Accounts::model()->findByPk($bet->friend_id);
 
                 $SkeezBetMailer = new SkeezBetMailer();
 
                 $account_mail = array(
                     'account_first_name'    => $account->first_name,
-                    'friends_first_name'    => $friends->first_name
+                    'friends_first_name'    => $friend->first_name
                 );
 
-                $sendMail = $SkeezBetMailer->sendApproveBetsFriendEmail($account->email, $account_mail);
+                $sendMail = $SkeezBetMailer->sendApproveBetsFriendEmail ($account->email, $account_mail, $accept_mode);
                 if(!$sendMail){
                     $this->_json_result['message'] = array ('Could not send email');
                 }
-            }else $this->_json_result['message'] = $bets->getErrors();
+            }else $this->_json_result['message'] = $bet->getErrors();
 
         }
         $this->sendResponse("application/json", $this->_json_result);
     }
+
     /*
      * Send back request to client
      * */

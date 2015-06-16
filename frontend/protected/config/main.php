@@ -103,20 +103,28 @@ return array(
                 'template' => 'forgot_password'
             ),
             'email_friend' => array(
-                    'subject' => 'You wants to add you to the list',
+                    'subject' => 'You got a friend request',
                     'template' => 'email_friend_notification'
                 ),
             'approve_email_friend' => array(
-                'subject' => 'You have confirmed',
+                'subject' => 'Your friend request had been approved',
                 'template' => 'approve_email_friend_notification'
             ),
+            'decline_email_friend' => array(
+                'subject' => 'Your friend request had been rejected',
+                'template' => 'decline_email_friend_notification'
+            ),
             'bets_email_friend' => array(
-                'subject' => 'you have wagered match',
+                'subject' => 'You have been invited to a bet',
                 'template' => 'bets_email_friend_notification'
             ),
             'approve_bets_email_friend' => array(
-                'subject' => 'You have bets confirmed',
+                'subject' => 'Your bet had been approved',
                 'template' => 'approve_bets_email_friend_notification'
+            ),
+            'decline_bets_email_friend' => array(
+                'subject' => 'Your bet had been declined',
+                'template' => 'decline_bets_email_friend_notification'
             )
         )
     )

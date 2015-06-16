@@ -93,7 +93,7 @@
                                                                               <td valign="top" align="center" style="padding: 15px 35px;" class="mld-element-content">
                                                                                   <p style="color: #484352; font-size: 22px; margin: 0px; font-family: Arial,Helvetica,sans-serif; padding: 0px; line-height: 1.5; font-weight: bold; font-style: normal; text-decoration: none; text-align: justify;" class="mld-heading2"><strong><br></strong></p>
                                                                                   <p style="color: #7b7a7a; font-size: 14px; margin: 0px; font-family: Arial,Helvetica,sans-serif; padding: 0px; line-height: 150%; text-align: justify;" class="mld-paragraph">
-                                                                                      Hi <b>[ACCOUNT_FIRST_NAME]</b>, <b>[FRIENDS_FIRST_NAME]</b> has been approved your bet request!<br></p>
+                                                                                      Hi <b>[ACCOUNT_FIRST_NAME]</b>, <b>[FRIENDS_FIRST_NAME]</b> has been declined your bet request!<br></p>
                                                                                   <p style="color: #7b7a7a; font-size: 14px; margin: 0px; font-family: Arial,Helvetica,sans-serif; padding: 0px; line-height: 150%; text-align: justify;" class="mld-paragraph"><br></p>
                                                                                   <p style="color: #7b7a7a; font-size: 14px; margin: 0px; font-family: Arial,Helvetica,sans-serif; padding: 0px; line-height: 150%; text-align: justify;" class="mld-paragraph"></p>
                                                                               </td>

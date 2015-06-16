@@ -93,7 +93,7 @@
                                                                               <td valign="top" align="center" style="padding: 15px 35px;" class="mld-element-content">
                                                                                   <p style="color: #484352; font-size: 22px; margin: 0px; font-family: Arial,Helvetica,sans-serif; padding: 0px; line-height: 1.5; font-weight: bold; font-style: normal; text-decoration: none; text-align: justify;" class="mld-heading2"><strong><br></strong></p>
                                                                                   <p style="color: #7b7a7a; font-size: 14px; margin: 0px; font-family: Arial,Helvetica,sans-serif; padding: 0px; line-height: 150%; text-align: justify;" class="mld-paragraph">
-                                                                                      Hi [FRIENDS_FIRST_NAME], [ACCOUNT_FIRST_NAME] bets matches you as his (her) friend, you can login to BetSkeez to approve.<br></p>
+                                                                                      Hi [FRIENDS_FIRST_NAME], [ACCOUNT_FIRST_NAME] wants to bet with you on this match with this score.<br></p>
                                                                                   <p style="color: #7b7a7a; font-size: 14px; margin: 0px; font-family: Arial,Helvetica,sans-serif; padding: 0px; line-height: 150%; text-align: justify;" class="mld-paragraph"> <br/><br/>
                                                                                       <table cellpadding="10" style="margin: 0 auto; text-align: center;">
                                                                                         <tr>

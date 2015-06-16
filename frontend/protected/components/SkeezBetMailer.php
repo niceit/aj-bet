@@ -72,18 +72,18 @@ class SkeezBetMailer{
     }
 
     /*
-    * Send add friend
+    * Send add friend email notification
     * */
-    public function sendAddFriendEmail($to, $account, $friend) {
+    public function sendAddFriendEmail($to, $account_name, $friend_name) {
         $add_friend_email_content = $this->fetchEmailTemplate($this->_email_template['email_friend']['template']);
+
         if (!$add_friend_email_content){
             return false;
         }
-        var_dump($add_friend_email_content);
-        die('dddd');
+
         $match_cases = array(
-            '[ACCOUNT_FIRST_NAME]' => $account['account_first_name'],
-            '[FRIENDS_FIRST_NAME]' => $friend['friends_first_name']
+            '[ACCOUNT_FIRST_NAME]' => $account_name,
+            '[FRIENDS_FIRST_NAME]' => $friend_name
         );
 
         $add_friend_email_content = $this->parseEmailVariable($match_cases, $add_friend_email_content);
@@ -96,22 +96,32 @@ class SkeezBetMailer{
     }
 
     /*
-   * Send add friend
+   * Send approve friend notification
    * */
-    public function sendApproveAddFriendEmail($to, $account, $friend) {
-        $add_friend_email_content = $this->fetchEmailTemplate($this->_email_template['approve_email_friend']['template']);
+    public function sendApproveAddFriendEmail($to, $account_name, $friend_name, $accept_mode) {
+
+        if ($accept_mode == 1) {
+            $add_friend_email_content = $this->fetchEmailTemplate ($this->_email_template['approve_email_friend']['template']);
+        }
+        else $add_friend_email_content = $this->fetchEmailTemplate ($this->_email_template['decline_email_friend']['template']);
 
         if (!$add_friend_email_content){
             return false;
         }
 
         $match_cases = array(
-            '[ACCOUNT_FIRST_NAME]' => $account['account_first_name'],
-            '[FRIENDS_FIRST_NAME]' => $friend['friends_first_name']
+            '[ACCOUNT_FIRST_NAME]' => $account_name,
+            '[FRIENDS_FIRST_NAME]' => $friend_name
         );
 
         $add_friend_email_content = $this->parseEmailVariable($match_cases, $add_friend_email_content);
-        $this->addData($to, $this->_email_template['approve_email_friend']['subject'], $add_friend_email_content);
+
+        if ($accept_mode == 1) {
+            $this->addData ($to, $this->_email_template['approve_email_friend']['subject'], $add_friend_email_content);
+        }
+        else {
+            $this->addData ($to, $this->_email_template['decline_email_friend']['subject'], $add_friend_email_content);
+        }
 
         if ($this->_mailer->send()){
             return true;
@@ -120,8 +130,8 @@ class SkeezBetMailer{
     }
 
     /*
-  * Send add friend
-  * */
+    * Send bet notification email
+    * */
     public function sendAddBetsFriendEmail($to, $account) {
         $bets_friend_email_content = $this->fetchEmailTemplate($this->_email_template['bets_email_friend']['template']);
 
@@ -152,10 +162,13 @@ class SkeezBetMailer{
     }
 
     /*
-   * Send add approve bets
-   * */
-    public function sendApproveBetsFriendEmail($to, $account) {
-        $add_friend_email_content = $this->fetchEmailTemplate($this->_email_template['approve_bets_email_friend']['template']);
+    * Send add approve bets
+    * */
+    public function sendApproveBetsFriendEmail($to, $account, $accept_mode) {
+        if ($accept_mode == 1) {
+            $add_friend_email_content = $this->fetchEmailTemplate ($this->_email_template['approve_bets_email_friend']['template']);
+        }
+        else $add_friend_email_content = $this->fetchEmailTemplate ($this->_email_template['decline_bets_email_friend']['template']);
 
         if (!$add_friend_email_content){
             return false;
@@ -167,7 +180,11 @@ class SkeezBetMailer{
         );
 
         $add_friend_email_content = $this->parseEmailVariable($match_cases, $add_friend_email_content);
-        $this->addData($to, $this->_email_template['approve_bets_email_friend']['subject'], $add_friend_email_content);
+
+        if ($accept_mode == 1) {
+            $this->addData ($to, $this->_email_template['approve_bets_email_friend']['subject'], $add_friend_email_content);
+        }
+        else $this->addData ($to, $this->_email_template['decline_bets_email_friend']['subject'], $add_friend_email_content);
 
         if ($this->_mailer->send()){
             return true;
