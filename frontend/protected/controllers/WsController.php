@@ -635,7 +635,7 @@ class WsController extends Controller
     public function actionListPublicBets()
     {
         $bet_public = array();
-        $subcategory = SkeezBetSubCategories::model()->findAll(array('order' => 'parent_category_id ASC'));
+        $subcategory = SkeezBetSubCategories::model()->findAll(array('order' => 'name ASC'));
         $arr_id_best = array();
         $bets_result = SkeezBetResults::model()->findAll();
         foreach($bets_result as $bet)
@@ -694,7 +694,7 @@ class WsController extends Controller
         if (Yii::app()->request->isPostRequest) {
             $account_id = Yii::app()->request->getPost('account_id');
             $bet_private = array();
-            $subcategory = SkeezBetSubCategories::model()->findAll(array('order' => 'parent_category_id ASC'));
+            $subcategory = SkeezBetSubCategories::model()->findAll(array('order' => 'name ASC'));
 
             $arr_id_best = array();
             $bets_result = SkeezBetResults::model()->findAll();
