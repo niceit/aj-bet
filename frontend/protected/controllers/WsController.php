@@ -582,7 +582,7 @@ class WsController extends Controller
 
             $bet = SkeezBets::model()->findByPk ($bet_id);
 
-            if (!empty($bet)) {
+            if (empty($bet)) {
                 $this->_json_result['message'] = array('Bet session was not found.');
                 $this->sendResponse ("application/json", $this->_json_result);
             }
