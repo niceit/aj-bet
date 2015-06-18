@@ -353,11 +353,11 @@ class WsController extends Controller
                     $TeamMatches[] = array(
                         'home'          =>  array(
                                         'name'  =>  $homeMatches->name,
-                                        'logo'  =>  Yii::app()->params['base_url_image'] . $homeMatches->logo
+                                        'logo'  =>  Yii::app()->params['base_url'] . $homeMatches->logo
                                     ),
                         'opponent'      =>  array(
                                         'name'  =>  $opponentMatches->name,
-                                        'logo'  =>  Yii::app()->params['base_url_image'] . $opponentMatches->logo
+                                        'logo'  =>  Yii::app()->params['base_url'] . $opponentMatches->logo
                                     ),
                         'time_start'    =>  $teamMatches['match_time']
                     );
@@ -498,6 +498,7 @@ class WsController extends Controller
             $match_id = Yii::app()->request->getPost('match_id');
             $score_1 = Yii::app()->request->getPost('score_1');
             $score_2 = Yii::app()->request->getPost('score_2');
+            $is_public = Yii::app()->request->getPost('is_public');
 
             $skeezBet = new SkeezBets();
             $skeezBet->setAttribute ('account_id', $account_id);
@@ -506,6 +507,7 @@ class WsController extends Controller
             $skeezBet->setAttribute ('score_1', $score_1);
             $skeezBet->setAttribute ('score_2', $score_2);
             $skeezBet->setAttribute ('approve', 0);
+            $skeezBet->setAttribute ('is_public', $is_public);
             $skeezBet->setAttribute( 'created', new CDbExpression('NOW()'));
 
             if ($skeezBet->validate()) {
@@ -542,12 +544,12 @@ class WsController extends Controller
                     $account_mail = array(
                         'home'               => array(
                             'name'  => $home->name,
-                            'logo'  =>  Yii::app()->params['base_url_image'] . $home->logo,
+                            'logo'  =>  Yii::app()->params['base_url'] . $home->logo,
                             'score' => $score_1
                         ),
                         'opponent'               => array(
                             'name'  => $opponent->name,
-                            'logo'  =>  Yii::app()->params['base_url_image'] . $opponent->logo,
+                            'logo'  =>  Yii::app()->params['base_url'] . $opponent->logo,
                             'score' => $score_2
                         ),
                         'account_first_name'    => $account->first_name,
@@ -627,6 +629,122 @@ class WsController extends Controller
         $this->sendResponse("application/json", $this->_json_result);
     }
 
+    /*
+   *  Get  List public bets
+   * */
+    public function actionListPublicBets()
+    {
+        $bet_public = array();
+        $subcategory = SkeezBetSubCategories::model()->findAll(array('order' => 'parent_category_id ASC'));
+        $arr_id_best = array();
+        $bets_result = SkeezBetResults::model()->findAll();
+        foreach($bets_result as $bet)
+            $arr_id_best[] =   $bet->bet_id;
+
+        if(!empty($subcategory))
+        {
+            foreach($subcategory as $cate){
+                $bets = SkeezBets::model()->getListPublicBets($cate->id,$arr_id_best);
+
+                if(!empty($bets)){
+                    $bets_temp = array();
+                    foreach ($bets as $bet) {
+                        $account =  Accounts::model()->findByPk($bet['account_id']);
+                        $friend =  Accounts::model()->findByPk($bet['friend_id']);
+
+                        $bets_temp[] = array(
+                            'id'            => $bet['id'],
+                            'account'       => array(
+                                'id'            => $account->id,
+                                'first_name'    => $account->first_name,
+                                'avatar'        => Yii::app()->params['base_url'].$account->avatar
+                            ),
+                            'friend'       => array(
+                                'id'            => $friend->id,
+                                'first_name'    => $friend->first_name,
+                                'avatar'        => Yii::app()->params['base_url'].$friend->avatar
+                            )
+                        );
+                    }
+                    $bet_public[] = array(
+                        'category'    => array(
+                                        'id'    => $cate->id,
+                                        'name'  => $cate->name
+                                        ),
+                        'bets'  => $bets_temp
+                    );
+                }
+            }
+        }
+
+        if(!empty($bet_public)){
+            $this->_json_result['status'] = 1;
+            $this->_json_result['message'] = array ('Bets successfully loaded');
+            $this->_json_result['Bets'] = array($bet_public);
+        }else $this->_json_result['message'] = array ('There is no bet available');
+
+        $this->sendResponse("application/json", $this->_json_result);
+    }
+
+    /*
+    *  Get List Private bets
+    * */
+    public function actionListPrivateBets()
+    {
+        if (Yii::app()->request->isPostRequest) {
+            $account_id = Yii::app()->request->getPost('account_id');
+            $bet_private = array();
+            $subcategory = SkeezBetSubCategories::model()->findAll(array('order' => 'parent_category_id ASC'));
+
+            $arr_id_best = array();
+            $bets_result = SkeezBetResults::model()->findAll();
+            foreach($bets_result as $bet)
+                $arr_id_best[] =   $bet->bet_id;
+
+            if(!empty($subcategory))
+            {
+                foreach($subcategory as $cate){
+                    $bets = SkeezBets::model()->getListPrivateBets($cate->id,$account_id,$arr_id_best);
+
+                    if(!empty($bets)){
+                        $bets_temp = array();
+                        foreach ($bets as $bet) {
+                            $account =  Accounts::model()->findByPk($bet['account_id']);
+                            $friend =  Accounts::model()->findByPk($bet['friend_id']);
+                            $bets_temp[] = array(
+                                'id'            => $bet['id'],
+                                'account'       => array(
+                                    'id'            => $account->id,
+                                    'first_name'    => $account->first_name,
+                                    'avatar'        => Yii::app()->params['base_url'].$account->avatar
+                                ),
+                                'friend'       => array(
+                                    'id'            => $friend->id,
+                                    'first_name'    => $friend->first_name,
+                                    'avatar'        => Yii::app()->params['base_url'].$friend->avatar
+                                )
+                            );
+                        }
+                        $bet_private[] = array(
+                            'category'    => array(
+                                'id'    => $cate->id,
+                                'name'  => $cate->name
+                            ),
+                            'bets'  => $bets_temp
+                        );
+                    }
+                }
+            }
+            if(!empty($bet_private)){
+                $this->_json_result['status'] = 1;
+                $this->_json_result['message'] = array ('Bets private successfully loaded');
+                $this->_json_result['Bets'] = array($bet_private);
+            }else $this->_json_result['message'] = array ('There is no bet private available');
+
+
+        }
+        $this->sendResponse("application/json", $this->_json_result);
+    }
     /*
      * Send back request to client
      * */
