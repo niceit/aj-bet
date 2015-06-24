@@ -25,4 +25,8 @@ if(!class_exists('YiiBase', false))
  */
 class Yii extends YiiBase
 {
+    public static function debugVar ($var) {
+        echo '<pre>'; print_r ($var); echo '</pre>';
+        Yii::app()->end();
+    }
 }

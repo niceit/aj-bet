@@ -29,8 +29,8 @@ class WsController extends Controller
      * */
     public function actionRegister(){
         if (Yii::app()->request->isPostRequest){
-            $data = Yii::app()->request->getPost('Account');
 
+            $data = Yii::app()->request->getPost('Account');
             $data = self::parsePostJsonRequest ($data);
 
             $Account = new Accounts();
@@ -441,7 +441,7 @@ class WsController extends Controller
             }
 
             if($friend->approve == 1) {
-                $this->_json_result['message'] = array('Friend request had been approved.');
+                $this->_json_result['message'] = array('Friend request had been approved before.');
                 $this->sendResponse("application/json", $this->_json_result);
             }
 
