@@ -159,7 +159,7 @@ class SkeezBets extends CActiveRecord
     public function getListUserArchivedBets($account_id = 0){
         $db_prefix = Yii::app()->params['db_prefix'];
         $array = Yii::app()->db->createCommand()
-            ->select("*")
+            ->select("b.*, r.result as result, r.score_1 as score_result_1,r.score_2 as score_result_2")
             ->from($db_prefix.'bets as b')
             ->join($db_prefix.'bet_results as r', 'b.id = r.bet_id')
             ->where('b.account_id = '.$account_id )

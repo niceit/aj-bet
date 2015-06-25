@@ -796,7 +796,11 @@ class WsController extends Controller
                         'id'            => $bet['id'],
                         'score_1'       => $bet['score_1'],
                         'score_2'       => $bet['score_2'],
-                        'result'        => $bet['result'],
+                        'result'        => array(
+                                'score_1'   => $bet['score_result_1'],
+                                'score_2'   => $bet['score_result_2'],
+                                'result'    => $bet['result']
+                            ),
                         'account'       => array(
                             'id'            => $account->id,
                             'first_name'    => $account->first_name,
@@ -837,6 +841,12 @@ class WsController extends Controller
         try{
             $file = CUploadedFile::getInstanceByName('avatar');
             $extensions = array('image/png','image/jpg','image/jpeg');
+            $arr_size = (getimagesize($file->getTempName()));
+            if($arr_size[0] > 150 && $arr_size[1] > 150 )
+            {
+                $this->_json_result['message'] = array ('You must upload image dimension with 150x150 pixel!');
+                $this->sendResponse("application/json", $this->_json_result);
+            }
             if(in_array($file->type,$extensions)){
                 if($file->size < 100000){
                     $filename = substr(md5(time()),10)."_".$file->getName();
