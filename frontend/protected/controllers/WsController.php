@@ -635,32 +635,38 @@ class WsController extends Controller
     public function actionListPublicBets()
     {
         $bet_public = array();
-        $subcategory = SkeezBetSubCategories::model()->findAll(array('order' => 'name ASC'));
+        $subcategory = SkeezBetSubCategories::model()->findAll (array('order' => 'name ASC'));
         $arr_id_best = array();
         $bets_result = SkeezBetResults::model()->findAll();
-        foreach($bets_result as $bet)
-            $arr_id_best[] =   $bet->bet_id;
+        foreach($bets_result as $bet) {
+            $arr_id_best[] = $bet->bet_id;
+        }
 
-        if(!empty($subcategory))
-        {
-            foreach($subcategory as $cate){
-                $bets = SkeezBets::model()->getListPublicBets($cate->id,$arr_id_best);
+        if (!empty($subcategory))  {
 
-                if(!empty($bets)){
+            foreach($subcategory as $cate) {
+
+                $bets = SkeezBets::model()->getListPublicBets ($cate->id, $arr_id_best);
+
+                if (!empty ($bets)){
                     $bets_temp = array();
                     foreach ($bets as $bet) {
-                        $account =  Accounts::model()->findByPk($bet['account_id']);
-                        $friend =  Accounts::model()->findByPk($bet['friend_id']);
+                        $account = Accounts::model()->findByPk ($bet['account_id']);
+                        $friend = Accounts::model()->findByPk ($bet['friend_id']);
 
-                        if($account->avatar!='')
-                            $avatar_account = Yii::app()->params['base_url'].$account->avatar;
-                        else
+                        if ($account->avatar != '') {
+                            $avatar_account = Yii::app ()->params['base_url'] . $account->avatar;
+                        }
+                        else {
                             $avatar_account = '';
+                        }
 
-                        if($friend->avatar!='')
-                            $avatar_friend = Yii::app()->params['base_url'].$friend->avatar;
-                        else
+                        if ($friend->avatar != '') {
+                            $avatar_friend = Yii::app ()->params['base_url'] . $friend->avatar;
+                        }
+                        else {
                             $avatar_friend = '';
+                        }
 
                         $bets_temp[] = array(
                             'id'            => $bet['id'],
@@ -676,6 +682,7 @@ class WsController extends Controller
                             )
                         );
                     }
+
                     $bet_public[] = array(
                         'category'    => array(
                                         'id'    => $cate->id,
@@ -687,11 +694,14 @@ class WsController extends Controller
             }
         }
 
-        if(!empty($bet_public)){
+        if (!empty($bet_public)) {
             $this->_json_result['status'] = 1;
             $this->_json_result['message'] = array ('Bets successfully loaded');
             $this->_json_result['Bets'] = array($bet_public);
-        }else $this->_json_result['message'] = array ('There is no bet available');
+        }
+        else {
+            $this->_json_result['message'] = array ('There is no bet available');
+        }
 
         $this->sendResponse("application/json", $this->_json_result);
     }
@@ -702,34 +712,39 @@ class WsController extends Controller
     public function actionListPrivateBets()
     {
         if (Yii::app()->request->isPostRequest) {
-            $account_id = Yii::app()->request->getPost('account_id');
+            $account_id = Yii::app()->request->getPost ('account_id');
             $bet_private = array();
-            $subcategory = SkeezBetSubCategories::model()->findAll(array('order' => 'name ASC'));
+            $subcategory = SkeezBetSubCategories::model()->findAll (array('order' => 'name ASC'));
 
             $arr_id_best = array();
             $bets_result = SkeezBetResults::model()->findAll();
-            foreach($bets_result as $bet)
-                $arr_id_best[] =   $bet->bet_id;
+            foreach($bets_result as $bet) {
+                $arr_id_best[] = $bet->bet_id;
+            }
 
-            if(!empty($subcategory))
-            {
-                foreach($subcategory as $cate){
-                    $bets = SkeezBets::model()->getListPrivateBets($cate->id,$account_id,$arr_id_best);
+            if (!empty($subcategory)) {
+                foreach ($subcategory as $cate){
+                    $bets = SkeezBets::model()->getListPrivateBets ($cate->id, $account_id, $arr_id_best);
 
-                    if(!empty($bets)){
+                    if (!empty($bets)) {
+
                         $bets_temp = array();
                         foreach ($bets as $bet) {
                             $account =  Accounts::model()->findByPk($bet['account_id']);
                             $friend =  Accounts::model()->findByPk($bet['friend_id']);
-                            if($account->avatar!='')
-                                $avatar_account = Yii::app()->params['base_url'].$account->avatar;
-                            else
+                            if ($account->avatar!='') {
+                                $avatar_account = Yii::app ()->params['base_url'] . $account->avatar;
+                            }
+                            else {
                                 $avatar_account = '';
+                            }
 
-                            if($friend->avatar!='')
-                                $avatar_friend = Yii::app()->params['base_url'].$friend->avatar;
-                            else
+                            if($friend->avatar!='') {
+                                $avatar_friend = Yii::app ()->params['base_url'] . $friend->avatar;
+                            }
+                            else {
                                 $avatar_friend = '';
+                            }
 
                             $bets_temp[] = array(
                                 'id'            => $bet['id'],
@@ -755,11 +770,13 @@ class WsController extends Controller
                     }
                 }
             }
-            if(!empty($bet_private)){
+
+            if (!empty($bet_private)) {
                 $this->_json_result['status'] = 1;
-                $this->_json_result['message'] = array ('Bets private successfully loaded');
+                $this->_json_result['message'] = array ('Private Bets successfully loaded');
                 $this->_json_result['Bets'] = array($bet_private);
-            }else $this->_json_result['message'] = array ('There is no bet private available');
+            }
+            else $this->_json_result['message'] = array ('There is no bet available');
 
 
         }
@@ -774,7 +791,7 @@ class WsController extends Controller
         if (Yii::app()->request->isPostRequest) {
             $account_id = Yii::app()->request->getPost('account_id');
             $archive = SkeezBets::model()->getListUserArchivedBets($account_id);
-            if($archive){
+            if ($archive) {
                 $arr_archive = array();
                 foreach($archive as $bet){
                     $account =  Accounts::model()->findByPk($bet['account_id']);
