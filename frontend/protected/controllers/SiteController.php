@@ -112,4 +112,12 @@ class SiteController extends Controller
         $SkeezBetUnitTest = new SkeezBetUnitTesting();
         $SkeezBetUnitTest->emailTemplateTesting($template_name);
     }
+
+    /**
+     * Displays the login page
+     */
+    public function actionUpload()
+    {
+        $this->render('upload');
+    }
 }

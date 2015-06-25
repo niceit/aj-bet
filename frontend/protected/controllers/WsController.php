@@ -652,17 +652,27 @@ class WsController extends Controller
                         $account =  Accounts::model()->findByPk($bet['account_id']);
                         $friend =  Accounts::model()->findByPk($bet['friend_id']);
 
+                        if($account->avatar!='')
+                            $avatar_account = Yii::app()->params['base_url'].$account->avatar;
+                        else
+                            $avatar_account = '';
+
+                        if($friend->avatar!='')
+                            $avatar_friend = Yii::app()->params['base_url'].$friend->avatar;
+                        else
+                            $avatar_friend = '';
+
                         $bets_temp[] = array(
                             'id'            => $bet['id'],
                             'account'       => array(
                                 'id'            => $account->id,
                                 'first_name'    => $account->first_name,
-                                'avatar'        => Yii::app()->params['base_url'].$account->avatar
+                                'avatar'        => $avatar_account
                             ),
                             'friend'       => array(
                                 'id'            => $friend->id,
                                 'first_name'    => $friend->first_name,
-                                'avatar'        => Yii::app()->params['base_url'].$friend->avatar
+                                'avatar'        => $avatar_friend
                             )
                         );
                     }
@@ -711,17 +721,27 @@ class WsController extends Controller
                         foreach ($bets as $bet) {
                             $account =  Accounts::model()->findByPk($bet['account_id']);
                             $friend =  Accounts::model()->findByPk($bet['friend_id']);
+                            if($account->avatar!='')
+                                $avatar_account = Yii::app()->params['base_url'].$account->avatar;
+                            else
+                                $avatar_account = '';
+
+                            if($friend->avatar!='')
+                                $avatar_friend = Yii::app()->params['base_url'].$friend->avatar;
+                            else
+                                $avatar_friend = '';
+
                             $bets_temp[] = array(
                                 'id'            => $bet['id'],
                                 'account'       => array(
                                     'id'            => $account->id,
                                     'first_name'    => $account->first_name,
-                                    'avatar'        => Yii::app()->params['base_url'].$account->avatar
+                                    'avatar'        => $avatar_account
                                 ),
                                 'friend'       => array(
                                     'id'            => $friend->id,
                                     'first_name'    => $friend->first_name,
-                                    'avatar'        => Yii::app()->params['base_url'].$friend->avatar
+                                    'avatar'        => $avatar_friend
                                 )
                             );
                         }
@@ -742,6 +762,92 @@ class WsController extends Controller
             }else $this->_json_result['message'] = array ('There is no bet private available');
 
 
+        }
+        $this->sendResponse("application/json", $this->_json_result);
+    }
+
+    /*
+    *  Get List Private bets
+    * */
+    public function actionUserArchiveBets()
+    {
+        if (Yii::app()->request->isPostRequest) {
+            $account_id = Yii::app()->request->getPost('account_id');
+            $archive = SkeezBets::model()->getListUserArchivedBets($account_id);
+            if($archive){
+                $arr_archive = array();
+                foreach($archive as $bet){
+                    $account =  Accounts::model()->findByPk($bet['account_id']);
+                    $friend =  Accounts::model()->findByPk($bet['friend_id']);
+                    $match =  SkeezTeamMatches::model()->getMatchesTeamMatches($bet['match_id']);
+                    $home =  SkeezTeams::model()->findByPk($match['home']);
+                    $opponent =  SkeezTeams::model()->findByPk($match['opponent']);
+                    if($account->avatar!='')
+                        $avatar_account = Yii::app()->params['base_url'].$account->avatar;
+                    else
+                        $avatar_account = '';
+
+                    if($friend->avatar!='')
+                        $avatar_friend = Yii::app()->params['base_url'].$friend->avatar;
+                    else
+                        $avatar_friend = '';
+
+                    $arr_archive[] =  array(
+                        'id'            => $bet['id'],
+                        'score_1'       => $bet['score_1'],
+                        'score_2'       => $bet['score_2'],
+                        'result'        => $bet['result'],
+                        'account'       => array(
+                            'id'            => $account->id,
+                            'first_name'    => $account->first_name,
+                            'avatar'        => $avatar_account
+                        ),
+                        'friend'       => array(
+                            'id'            => $friend->id,
+                            'first_name'    => $friend->first_name,
+                            'avatar'        => $avatar_friend
+                        ),
+                        'match'         => array(
+                            'id'            => $match['id'],
+                            'match_time'    => $match['match_time'],
+                            'home'  =>array(
+                                'name'  => $home['name'],
+                                'logo'  => Yii::app()->params['base_url'].$home['logo']
+                            ),
+                            'opponent'  =>array(
+                                'name'  => $opponent['name'],
+                                'logo'  => Yii::app()->params['base_url'].$opponent['logo']
+                            )
+                        )
+                    );
+                }
+                $this->_json_result['status'] = 1;
+                $this->_json_result['message'] = array ('Archived user bets successfully loaded');
+                $this->_json_result['archive'] = array($arr_archive);
+            }else  array ('There is no archive bet available');
+        }
+        $this->sendResponse("application/json", $this->_json_result);
+    }
+
+    /*
+   *  Upload avatar of user
+   * */
+    public function actionUpload()
+    {
+        try{
+            $file = CUploadedFile::getInstanceByName('avatar');
+            $extensions = array('image/png','image/jpg','image/jpeg');
+            if(in_array($file->type,$extensions)){
+                if($file->size < 100000){
+                    $filename = substr(md5(time()),10)."_".$file->getName();
+                    $file->saveAs(Yii::getPathOfAlias('webroot').'/assets/avatar/'.$filename);
+                    $this->_json_result['status'] = 1;
+                    $this->_json_result['image_path'] = Yii::app()->params['base_url'].'/assets/avatar/'.$filename;
+                    $this->_json_result['message'] = array ('Upload avatar successfully!');
+                }else $this->_json_result['message'] = array ('Invalid file size!');
+            }
+            else $this->_json_result['message'] = array ('Invalid file type!');
+        }catch (Exception $e){
         }
         $this->sendResponse("application/json", $this->_json_result);
     }

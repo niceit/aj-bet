@@ -112,6 +112,19 @@ class SkeezTeamMatches extends CActiveRecord
         return $array;
     }
 
+    /*
+     * Get list teamMatchesBet
+     */
+    public function getMatchesTeamMatches($match_id = 0){
+        $db_prefix = Yii::app()->params['db_prefix'];
+        $array = Yii::app()->db->createCommand()
+            ->select("mt.home , mt.opponent, m.id, m.match_time")
+            ->from($db_prefix.'matches m')
+            ->join($db_prefix.'team_matches mt', 'm.team_match = mt.id')
+            ->where('m.id = '.$match_id )
+            ->queryRow();
+        return $array;
+    }
 	/**
 	 * Returns the static model of the specified AR class.
 	 * Please note that you should have this exact method in all your CActiveRecord descendants!

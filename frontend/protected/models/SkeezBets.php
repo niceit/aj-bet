@@ -133,7 +133,7 @@ class SkeezBets extends CActiveRecord
     }
 
     /*
-    * Get Bets public
+    * Get Bets Private
     */
     public function getListPrivateBets($category_id = 0, $account_id = 0, $bets_result = array()){
         $db_prefix = Yii::app()->params['db_prefix'];
@@ -153,8 +153,24 @@ class SkeezBets extends CActiveRecord
         return $array;
     }
 
+    /*
+    * Get User Archived Bets
+    */
+    public function getListUserArchivedBets($account_id = 0){
+        $db_prefix = Yii::app()->params['db_prefix'];
+        $array = Yii::app()->db->createCommand()
+            ->select("*")
+            ->from($db_prefix.'bets as b')
+            ->join($db_prefix.'bet_results as r', 'b.id = r.bet_id')
+            ->where('b.account_id = '.$account_id )
+            ->orWhere('b.friend_id = '.$account_id )
+            ->order(array('b.created ASC'))
+            ->queryAll();
+        return $array;
+    }
 
-	/**
+
+    /**
 	 * Returns the static model of the specified AR class.
 	 * Please note that you should have this exact method in all your CActiveRecord descendants!
 	 * @param string $className active record class name.
