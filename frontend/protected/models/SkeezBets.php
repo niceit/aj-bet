@@ -127,6 +127,7 @@ class SkeezBets extends CActiveRecord
             ->where(array('not in', 'b.id', $bets_result ))
             ->andWhere('c.id = '.$category_id )
             ->andWhere('b.is_public = 1' )
+            ->andWhere('b.approve = 1' )
             ->order(array('b.created ASC'))
             ->queryAll();
         return $array;
@@ -148,6 +149,7 @@ class SkeezBets extends CActiveRecord
             ->andWhere('c.id = '.$category_id )
             ->andWhere('b.account_id = '.$account_id )
             ->andWhere('b.is_public = 0' )
+            ->andWhere('b.approve = 1' )
             ->order(array('b.created ASC'))
             ->queryAll();
         return $array;

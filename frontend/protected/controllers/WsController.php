@@ -813,6 +813,7 @@ class WsController extends Controller
                         'id'            => $bet['id'],
                         'score_1'       => $bet['score_1'],
                         'score_2'       => $bet['score_2'],
+                        'is_public'     => $bet['is_public'],
                         'result'        => array(
                                 'score_1'   => $bet['score_result_1'],
                                 'score_2'   => $bet['score_result_2'],
