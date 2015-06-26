@@ -732,14 +732,14 @@ class WsController extends Controller
                         foreach ($bets as $bet) {
                             $account =  Accounts::model()->findByPk($bet['account_id']);
                             $friend =  Accounts::model()->findByPk($bet['friend_id']);
-                            if ($account->avatar!='') {
+                            if ($account->avatar != '') {
                                 $avatar_account = Yii::app ()->params['base_url'] . $account->avatar;
                             }
                             else {
                                 $avatar_account = '';
                             }
 
-                            if($friend->avatar!='') {
+                            if ($friend->avatar != '') {
                                 $avatar_friend = Yii::app ()->params['base_url'] . $friend->avatar;
                             }
                             else {
@@ -794,20 +794,25 @@ class WsController extends Controller
             if ($archive) {
                 $arr_archive = array();
                 foreach($archive as $bet){
-                    $account =  Accounts::model()->findByPk($bet['account_id']);
-                    $friend =  Accounts::model()->findByPk($bet['friend_id']);
-                    $match =  SkeezTeamMatches::model()->getMatchesTeamMatches($bet['match_id']);
-                    $home =  SkeezTeams::model()->findByPk($match['home']);
-                    $opponent =  SkeezTeams::model()->findByPk($match['opponent']);
-                    if($account->avatar!='')
-                        $avatar_account = Yii::app()->params['base_url'].$account->avatar;
-                    else
-                        $avatar_account = '';
+                    $account =  Accounts::model()->findByPk ($bet['account_id']);
+                    $friend =  Accounts::model()->findByPk ($bet['friend_id']);
+                    $match =  SkeezTeamMatches::model()->getMatchesTeamMatches ($bet['match_id']);
+                    $home =  SkeezTeams::model()->findByPk ($match['home']);
+                    $opponent =  SkeezTeams::model()->findByPk ($match['opponent']);
 
-                    if($friend->avatar!='')
-                        $avatar_friend = Yii::app()->params['base_url'].$friend->avatar;
-                    else
+                    if ($account->avatar != '') {
+                        $avatar_account = Yii::app ()->params['base_url'] . $account->avatar;
+                    }
+                    else {
+                        $avatar_account = '';
+                    }
+
+                    if ($friend->avatar != '') {
+                        $avatar_friend = Yii::app ()->params['base_url'] . $friend->avatar;
+                    }
+                    else {
                         $avatar_friend = '';
+                    }
 
                     $arr_archive[] =  array(
                         'id'            => $bet['id'],
@@ -846,7 +851,10 @@ class WsController extends Controller
                 $this->_json_result['status'] = 1;
                 $this->_json_result['message'] = array ('Archived user bets successfully loaded');
                 $this->_json_result['archive'] = array($arr_archive);
-            }else  array ('There is no archive bet available');
+            }
+            else {
+                $this->_json_result['message'] = array ('There is no archive bet available');
+            }
         }
         $this->sendResponse("application/json", $this->_json_result);
     }
